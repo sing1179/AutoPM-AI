@@ -1,5 +1,5 @@
 """
-PM Agent - Product prioritization assistant
+AutoPM AI - Product prioritization assistant
 Upload customer interviews and usage data, get AI-powered recommendations.
 """
 
@@ -13,7 +13,7 @@ load_dotenv()
 
 # Page config
 st.set_page_config(
-    page_title="PM Agent - What to Build Next",
+    page_title="AutoPM AI - What to Build Next",
     page_icon="📋",
     layout="wide",
 )
@@ -155,7 +155,7 @@ Please analyze the above data and provide your prioritized recommendations."""
 
 # --- UI ---
 
-st.title("📋 PM Agent")
+st.title("📋 AutoPM AI")
 st.markdown("*Upload customer interviews and usage data. Ask what to build next.*")
 st.divider()
 
@@ -226,7 +226,7 @@ if analyze_clicked:
 
             except ValueError as e:
                 st.error(str(e))
-                st.info("Create a `.env` file in the PM_agent directory with: `GROQ_API_KEY=your_key_here`")
+                st.info("Create a `.env` file in the AutoPM-AI directory with: `GROQ_API_KEY=your_key_here`")
             except Exception as e:
                 st.error(f"An error occurred: {e}")
                 st.caption("Check your API key and network connection. If the issue persists, try again later.")

@@ -1,4 +1,4 @@
-# PM Agent
+# AutoPM AI
 
 **An AI-powered product prioritization assistant that helps teams figure out *what* to build, not just how.**
 
@@ -8,9 +8,9 @@ Download, add your API key, and run. No sample data included—use your own cust
 
 ## Product Description
 
-PM Agent addresses a critical gap in product development: most tools focus on execution (how to build), but product managers spend the majority of their time on discovery and prioritization (what to build). Customer interviews, usage analytics, support tickets, and feedback live in scattered documents and spreadsheets—synthesizing them into actionable product direction is manual, inconsistent, and time-consuming.
+AutoPM AI addresses a critical gap in product development: most tools focus on execution (how to build), but product managers spend the majority of their time on discovery and prioritization (what to build). Customer interviews, usage analytics, support tickets, and feedback live in scattered documents and spreadsheets—synthesizing them into actionable product direction is manual, inconsistent, and time-consuming.
 
-PM Agent changes that. Upload your customer interview transcripts, product usage data, and any relevant documents. Ask "What should we build next?" and get AI-powered, evidence-backed recommendations that cite specific findings from your data. Each recommendation includes priority, impact, and the exact evidence that supports it.
+AutoPM AI changes that. Upload your customer interview transcripts, product usage data, and any relevant documents. Ask "What should we build next?" and get AI-powered, evidence-backed recommendations that cite specific findings from your data. Each recommendation includes priority, impact, and the exact evidence that supports it.
 
 ### The Problem
 
@@ -20,7 +20,7 @@ PM Agent changes that. Upload your customer interview transcripts, product usage
 
 ### The Solution
 
-PM Agent combines customer feedback and usage data into a single analysis. It extracts pain points, feature requests, and themes from interviews; identifies patterns, drop-offs, and opportunities from usage data; and produces prioritized recommendations with cited evidence. The way we define and communicate "what to build" can finally evolve.
+AutoPM AI combines customer feedback and usage data into a single analysis. It extracts pain points, feature requests, and themes from interviews; identifies patterns, drop-offs, and opportunities from usage data; and produces prioritized recommendations with cited evidence. The way we define and communicate "what to build" can finally evolve.
 
 ---
 
@@ -43,8 +43,8 @@ PM Agent combines customer feedback and usage data into a single analysis. It ex
 ### Installation
 
 ```bash
-git clone https://github.com/sing1179/PM_agent.git
-cd PM_agent
+git clone https://github.com/sing1179/AutoPM-AI.git
+cd AutoPM-AI
 
 python3 -m venv .venv
 source .venv/bin/activate   # On Windows: .venv\Scripts\activate
@@ -79,7 +79,7 @@ Open http://localhost:8501 in your browser.
 ## Project Structure
 
 ```
-PM_agent/
+AutoPM-AI/
 ├── app.py              # Main Streamlit application
 ├── requirements.txt    # Python dependencies
 ├── .env.example        # Environment template (copy to .env, add your own key)
