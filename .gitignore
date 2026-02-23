@@ -1,0 +1,35 @@
+# Environment - NEVER commit API keys
+.env
+.env.local
+.env.*.local
+
+.venv
+venv
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Sample/demo data (not shipped)
+sample_data/
+
+# One-time publish instructions (delete after pushing)
+PUBLISH.md
+
+# OS
+.DS_Store
+Thumbs.db
