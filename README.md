@@ -2,6 +2,8 @@
 
 **An AI-powered product prioritization assistant that helps teams figure out *what* to build, not just how.**
 
+🚀 **Live demo:** [https://autopm-ai.streamlit.app](https://autopm-ai.streamlit.app)
+
 Download, add your API key, and run. No sample data included—use your own customer interviews and usage data.
 
 ---
