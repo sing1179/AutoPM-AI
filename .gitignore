@@ -30,6 +30,10 @@ sample_data/
 # One-time publish instructions (delete after pushing)
 PUBLISH.md
 
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
 # OS
 .DS_Store
 Thumbs.db
