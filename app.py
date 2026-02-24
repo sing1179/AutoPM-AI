@@ -11,11 +11,12 @@ import os
 # Load environment variables
 load_dotenv()
 
-# Page config
+# Page config - match Figma: full width, no sidebar by default
 st.set_page_config(
-    page_title="AutoPM AI - What to Build Next",
-    page_icon="📋",
+    page_title="AutoPM-AI - Optimized for Thought, Built for Action",
+    page_icon="✨",
     layout="wide",
+    initial_sidebar_state="collapsed",
 )
 
 # File type handling
@@ -166,194 +167,188 @@ Please analyze the above data and provide your prioritized recommendations."""
 
 
 # --- UI ---
-# Redefined Glass Page Design - Glassmorphism style
+# Figma design: black bg, dotted grid, amber/orange orbs, nav bar, hero, glass card
 
 st.markdown("""
 <style>
-    /* Base: dark gradient background */
+    /* Base: black background with dotted grid */
     .stApp {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #0c4a6e 50%, #1e3a5f 75%, #0f172a 100%);
-        background-attachment: fixed;
+        background: #000000 !important;
+    }
+    
+    .stApp::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image: radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px);
+        background-size: 40px 40px;
+        pointer-events: none;
+        z-index: 0;
+    }
+    
+    /* Glowing orbs - use injected divs (see HTML below) */
+    
+    /* Ensure content is above orbs */
+    .main .block-container {
+        position: relative;
+        z-index: 10;
     }
     
     /* Glass sidebar */
     [data-testid="stSidebar"] {
-        background: rgba(15, 23, 42, 0.6) !important;
+        background: rgba(0, 0, 0, 0.6) !important;
         backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
         border-right: 1px solid rgba(255, 255, 255, 0.08);
     }
     
-    [data-testid="stSidebar"] .stMarkdown {
-        color: rgba(255, 255, 255, 0.9) !important;
-    }
+    [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] label { color: rgba(255,255,255,0.9) !important; }
+    [data-testid="stSidebar"] .stCaption { color: rgba(255,255,255,0.6) !important; }
     
-    [data-testid="stSidebar"] .stCaption {
-        color: rgba(255, 255, 255, 0.6) !important;
-    }
-    
-    /* Hero section - glass card */
-    .hero-glass {
-        background: rgba(255, 255, 255, 0.08);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border-radius: 20px;
-        padding: 2rem 2.5rem;
-        margin-bottom: 1.5rem;
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    }
-    
-    .hero-glass h1 {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: #f8fafc !important;
-        margin-bottom: 0.5rem;
-        letter-spacing: -0.02em;
-    }
-    
-    .hero-glass p {
-        color: rgba(248, 250, 252, 0.8) !important;
-        font-size: 1.1rem;
-    }
-    
-    /* File uploader - glass container */
-    div[data-testid="stFileUploader"] {
-        background: rgba(255, 255, 255, 0.06) !important;
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
+    /* Main glass card - middle column in first columns layout */
+    .figma-glass-card {
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border-radius: 24px;
         border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 16px;
-        padding: 2.5rem;
-        transition: all 0.3s ease;
-    }
-    
-    div[data-testid="stFileUploader"]:hover {
-        background: rgba(255, 255, 255, 0.1) !important;
-        border-color: rgba(148, 163, 184, 0.3);
-    }
-    
-    div[data-testid="stFileUploader"] section {
-        background: transparent !important;
-        border: none !important;
-    }
-    
-    /* Expanders - glass cards */
-    .streamlit-expanderHeader {
-        background: rgba(255, 255, 255, 0.06) !important;
-        backdrop-filter: blur(10px);
-        border-radius: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-    
-    /* Recommendations output - glass card */
-    .glass-recommendations {
-        background: rgba(255, 255, 255, 0.08);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border-radius: 20px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         padding: 2rem;
-        margin-top: 1.5rem;
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        margin: 1rem 0;
     }
     
-    .glass-recommendations h3 {
-        color: #f8fafc !important;
-        margin-top: 0;
-        margin-bottom: 1rem;
+    #main-glass-card ~ div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:nth-child(2) {
+        background: rgba(0, 0, 0, 0.4) !important;
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        padding: 2rem !important;
     }
     
-    .glass-recommendations .rec-content {
-        color: rgba(248, 250, 252, 0.95);
-        line-height: 1.6;
-    }
     
-    .glass-recommendations .rec-content h1, .glass-recommendations .rec-content h2, .glass-recommendations .rec-content h3 {
-        color: #f8fafc !important;
-    }
-    
-    .glass-recommendations .rec-content ul, .glass-recommendations .rec-content ol {
-        margin: 0.5rem 0;
-    }
-    
-    /* Main content text - light for dark bg */
-    .main .stMarkdown {
-        color: rgba(248, 250, 252, 0.95) !important;
-    }
-    
-    .main .stMarkdown h1, .main .stMarkdown h2, .main .stMarkdown h3 {
-        color: #f8fafc !important;
-    }
-    
-    .main label {
-        color: rgba(248, 250, 252, 0.9) !important;
-    }
-    
-    /* Primary button - glass style */
-    .stButton > button[kind="primary"] {
-        background: linear-gradient(135deg, rgba(56, 189, 248, 0.4) 0%, rgba(14, 165, 233, 0.4) 100%) !important;
-        backdrop-filter: blur(8px);
-        border: 1px solid rgba(56, 189, 248, 0.5);
-        color: #f8fafc !important;
-        font-weight: 600;
+    /* File uploader - glass style */
+    div[data-testid="stFileUploader"] {
+        background: rgba(255, 255, 255, 0.05) !important;
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 12px;
-        transition: all 0.2s ease;
+        padding: 1.5rem;
+    }
+    
+    div[data-testid="stFileUploader"] section { background: transparent !important; border: none !important; }
+    
+    /* Text input - dark glass */
+    .stTextInput input {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: #fff !important;
+        border-radius: 12px;
+    }
+    
+    .stTextInput input::placeholder { color: rgba(255,255,255,0.4); }
+    
+    /* Primary button - Generate style */
+    .stButton > button[kind="primary"] {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #fff !important;
+        font-weight: 500;
+        border-radius: 0.5rem;
     }
     
     .stButton > button[kind="primary"]:hover {
-        background: linear-gradient(135deg, rgba(56, 189, 248, 0.5) 0%, rgba(14, 165, 233, 0.5) 100%) !important;
-        border-color: rgba(56, 189, 248, 0.7);
-        box-shadow: 0 4px 20px rgba(56, 189, 248, 0.2);
+        background: rgba(255, 255, 255, 0.15) !important;
+        border-color: rgba(255, 255, 255, 0.25);
     }
     
-    /* Dividers */
-    hr {
-        border-color: rgba(255, 255, 255, 0.08) !important;
+    /* Secondary buttons */
+    .stButton > button:not([kind="primary"]) {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.8) !important;
+        border-radius: 0.5rem;
     }
     
-    /* Success / info / warning - glass-friendly */
+    .stButton > button:hover:not([kind="primary"]) {
+        background: rgba(255, 255, 255, 0.1) !important;
+    }
+    
+    /* Main content text */
+    .main .stMarkdown, .main label { color: rgba(255,255,255,0.95) !important; }
+    .main .stMarkdown h1, .main .stMarkdown h2, .main .stMarkdown h3 { color: #fff !important; }
+    
+    /* Recommendations output */
+    .glass-recommendations {
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(24px);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-top: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .glass-recommendations h3 { color: #fff !important; margin: 0 0 1rem 0; }
+    .glass-recommendations .rec-content { color: rgba(255,255,255,0.9); line-height: 1.6; }
+    .glass-recommendations .rec-content h1, .glass-recommendations .rec-content h2, .glass-recommendations .rec-content h3 { color: #fff !important; }
+    
+    /* Alerts */
     [data-testid="stAlert"] {
-        background: rgba(255, 255, 255, 0.08) !important;
+        background: rgba(255, 255, 255, 0.06) !important;
         backdrop-filter: blur(8px);
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 12px;
     }
     
-    /* Text input - glass style */
-    .stTextInput input {
-        background: rgba(255, 255, 255, 0.08) !important;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important;
-        color: #f8fafc !important;
-        border-radius: 10px;
-    }
-    
-    .stTextInput input::placeholder {
-        color: rgba(248, 250, 252, 0.5);
-    }
-    
-    /* Expander content */
+    /* Expanders */
     [data-testid="stExpander"] {
         background: rgba(255, 255, 255, 0.04);
         border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 12px;
         margin-bottom: 0.5rem;
     }
+    
+    /* Hide Streamlit branding */
+    #MainMenu { visibility: hidden; }
+    footer { visibility: hidden; }
 </style>
 """, unsafe_allow_html=True)
 
-# Sidebar
+# Glowing orbs (behind content)
+st.markdown("""
+<style>@keyframes orb-pulse { 0%,100%{opacity:0.8} 50%{opacity:1} }</style>
+<div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+    width: 800px; height: 800px; background: rgba(245, 158, 11, 0.25); border-radius: 50%; 
+    filter: blur(120px); pointer-events: none; z-index: 0; animation: orb-pulse 4s ease-in-out infinite;"></div>
+<div style="position: fixed; bottom: 0; right: 0; width: 600px; height: 600px; 
+    background: rgba(251, 146, 60, 0.2); border-radius: 50%; filter: blur(100px); 
+    pointer-events: none; z-index: 0;"></div>
+""", unsafe_allow_html=True)
+
+# Nav bar
+st.markdown("""
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 1.5rem 2rem; margin: -1rem -1rem 1rem -1rem;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: white;">AI</div>
+        <span style="color: white; font-size: 1.125rem; font-weight: 600;">AutoPM-AI</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 2rem;">
+        <span style="color: rgba(255,255,255,0.7); font-size: 0.875rem; cursor: pointer;">Research notes</span>
+        <button style="padding: 0.5rem 1rem; border-radius: 0.5rem; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: white; font-size: 0.875rem; cursor: pointer;">Login</button>
+        <button style="padding: 0.5rem 1rem; border-radius: 0.5rem; background: white; color: black; font-size: 0.875rem; font-weight: 500; cursor: pointer; border: none;">Create account</button>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# Sidebar - API key (collapsed by default, user can expand)
 with st.sidebar:
-    st.markdown("### AutoPM AI")
-    st.caption("Figure out *what* to build next.")
-    st.divider()
+    st.markdown("### ⚙️ Settings")
+    st.caption("API key required for AI recommendations.")
     if not get_api_key():
-        st.caption("🔑 API Key")
         api_key_input = st.text_input(
             "Groq API key",
             type="password",
             placeholder="Paste your key here",
-            help="Get a free key at console.groq.com",
             key="groq_key_input",
         )
         if api_key_input:
@@ -361,25 +356,57 @@ with st.sidebar:
             st.rerun()
     else:
         st.success("✓ Ready")
-    st.divider()
-    st.caption("**Supported formats**")
-    st.caption("Interviews: .txt, .md, .pdf, .docx")
-    st.caption("Data: .csv")
+    st.caption("Formats: .txt, .md, .pdf, .docx, .csv")
 
-# Hero - Glass card
-st.markdown(
-    '<div class="hero-glass"><h3 style="margin:0;font-size:2rem;">📋 AutoPM AI</h3>'
-    '<p style="margin:0.5rem 0 0 0;opacity:0.9;">Upload customer interviews and usage data. Ask what to build next.</p></div>',
-    unsafe_allow_html=True,
-)
+# Hero
+st.markdown("""
+<div style="text-align: center; padding: 2rem 0 1rem 0;">
+    <h1 style="font-size: 3.75rem; font-weight: 700; color: white; font-family: system-ui, sans-serif; line-height: 1.1; letter-spacing: -0.025em; margin: 0;">
+        Optimized for Thought<br/>Built for Action
+    </h1>
+    <p style="color: rgba(255,255,255,0.6); font-size: 1.125rem; margin-top: 1.5rem;">
+        Think smarter and act faster, from idea to execution in seconds.
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
-# File upload
-uploaded_files = st.file_uploader(
-    "**Drag and drop files here** — or browse",
-    type=None,
-    accept_multiple_files=True,
-    help="Interviews (.txt, .md, .pdf, .docx) • Usage data (.csv)",
-)
+# Main glass card - centered (ID for CSS targeting)
+st.markdown('<div id="main-glass-card"></div>', unsafe_allow_html=True)
+col_left, col_center, col_right = st.columns([1, 4, 1])
+with col_center:
+    # AI input + Generate button
+    col1, col2 = st.columns([5, 1])
+    with col1:
+        user_question = st.text_input(
+            "Ask your question",
+            value="What should we build next?",
+            placeholder="Ask for anything or use a command",
+            label_visibility="collapsed",
+            key="query_input",
+        )
+    with col2:
+        st.markdown("<div style='height: 38px;'></div>", unsafe_allow_html=True)
+        analyze_clicked = st.button("Generate", type="primary", use_container_width=True)
+
+    # Upload and Feedback - same row
+    col_upload, col_feedback = st.columns([1, 1])
+    with col_upload:
+        uploaded_files = st.file_uploader(
+            "Upload documents",
+            type=None,
+            accept_multiple_files=True,
+            help="Interviews (.txt, .md, .pdf, .docx) • Usage data (.csv)",
+            key="file_upload",
+        )
+    with col_feedback:
+        st.markdown("<div style='height: 52px;'></div>", unsafe_allow_html=True)
+        st.markdown("""
+        <a href="#" style="display: inline-flex; align-items: center; gap: 8px; padding: 0.5rem 1rem; 
+           border-radius: 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
+           color: rgba(255,255,255,0.7); font-size: 0.875rem; text-decoration: none;">
+            💬 Feedback
+        </a>
+        """, unsafe_allow_html=True)
 
 # File preview
 if uploaded_files:
@@ -399,32 +426,17 @@ if uploaded_files:
             else:
                 content = read_uploaded_file(uploaded_file)
                 st.text_area("Content", value=content, height=150, disabled=True, key=uploaded_file.name)
-else:
-    st.info("👆 Upload customer interviews and/or usage data to get started")
-
-# Question input
-st.markdown("---")
-st.subheader("💡 What should we build next?")
-
-col1, col2 = st.columns([4, 1])
-
-with col1:
-    user_question = st.text_input(
-        "Ask your question",
-        value="What should we build next?",
-        placeholder="What should we build next?",
-        label_visibility="collapsed",
+elif not uploaded_files and not analyze_clicked:
+    st.markdown(
+        '<p style="text-align: center; color: rgba(255,255,255,0.4); font-size: 0.875rem; padding: 2rem;">'
+        'Upload documents to get AI-powered recommendations</p>',
+        unsafe_allow_html=True,
     )
-
-with col2:
-    analyze_clicked = st.button("Get Recommendations", type="primary", use_container_width=True)
-
-st.markdown("---")
 
 # Results
 if analyze_clicked:
     if not uploaded_files:
-        st.warning("Please upload at least one file (customer interviews or usage data) before analyzing.")
+        st.warning("Please upload at least one file before analyzing.")
     elif not user_question or not user_question.strip():
         st.warning("Please enter a question.")
     else:
@@ -442,7 +454,27 @@ if analyze_clicked:
 
             except ValueError as e:
                 st.error(str(e))
-                st.info("Add your Groq API key in the sidebar (or set GROQ_API_KEY in .env for local use)")
+                st.info("Add your Groq API key in the sidebar (expand → Settings) or set GROQ_API_KEY in .env")
             except Exception as e:
                 st.error(f"An error occurred: {e}")
-                st.caption("Check your API key and network connection. If the issue persists, try again later.")
+
+# Trusted by section
+st.markdown("""
+<div style="text-align: center; padding: 3rem 0 2rem 0;">
+    <p style="color: rgba(255,255,255,0.4); font-size: 0.875rem; margin-bottom: 1.5rem;">Trusted by</p>
+    <div style="display: flex; align-items: center; justify-content: center; gap: 3rem; opacity: 0.4;">
+        <span style="color: white; font-size: 1.125rem; font-weight: 600;">Atlassian</span>
+        <span style="color: white; font-size: 1.125rem; font-weight: 600;">Notion</span>
+        <span style="color: white; font-size: 1.125rem; font-weight: 600;">Linear</span>
+        <span style="color: white; font-size: 1.125rem; font-weight: 600;">GitHub</span>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# Help button - bottom right
+st.markdown("""
+<div style="position: fixed; bottom: 24px; right: 24px; width: 40px; height: 40px; 
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); 
+    border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+    font-size: 1.25rem; color: rgba(255,255,255,0.7); cursor: pointer; z-index: 9999;">?</div>
+""", unsafe_allow_html=True)
