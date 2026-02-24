@@ -76,6 +76,17 @@ Open http://localhost:8501 in your browser.
 
 ---
 
+## Deploy for Others
+
+Deploy the app so anyone can use it:
+
+- **[Streamlit Community Cloud](https://share.streamlit.io)** — Connect GitHub, deploy in one click. Free.
+- **[Hugging Face Spaces](https://huggingface.co/spaces)** — Free hosting for AI apps.
+
+See [DEPLOY.md](DEPLOY.md) for step-by-step instructions.
+
+---
+
 ## Project Structure
 
 ```

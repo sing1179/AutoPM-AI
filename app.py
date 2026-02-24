@@ -100,10 +100,22 @@ def build_context(uploaded_files: list) -> str:
     return "\n\n".join(context_parts)
 
 
+def get_api_key() -> str | None:
+    """Get Groq API key from env, session state, or None if missing."""
+    # 1. Environment variable (local dev, Streamlit Cloud secrets)
+    api_key = os.getenv("GROQ_API_KEY")
+    # 2. Session state (deployed app - user pastes key in sidebar)
+    if not api_key and "groq_api_key" in st.session_state and st.session_state.groq_api_key:
+        api_key = st.session_state.groq_api_key
+    if not api_key or api_key.strip() == "" or "your_groq_api_key" in api_key.lower():
+        return None
+    return api_key.strip()
+
+
 def get_llm_client() -> OpenAI | None:
     """Get Groq client (OpenAI-compatible), returns None if API key is missing."""
-    api_key = os.getenv("GROQ_API_KEY")
-    if not api_key or api_key.strip() == "" or "your_groq_api_key" in api_key.lower():
+    api_key = get_api_key()
+    if not api_key:
         return None
     return OpenAI(
         api_key=api_key,
@@ -115,7 +127,7 @@ def get_recommendations(context: str, user_question: str) -> str:
     """Call Groq API to get product recommendations."""
     client = get_llm_client()
     if not client:
-        raise ValueError("GROQ_API_KEY is not set. Please add it to your .env file.")
+        raise ValueError("API key required. Add your Groq API key in the sidebar (or set GROQ_API_KEY in .env).")
 
     system_prompt = """You are an expert product manager analyzing customer feedback and usage data to recommend what to build next.
 
@@ -154,6 +166,26 @@ Please analyze the above data and provide your prioritized recommendations."""
 
 
 # --- UI ---
+
+# Sidebar: API key input (for deployed use when env var not set)
+with st.sidebar:
+    st.caption("🔑 API Key")
+    if not get_api_key():
+        api_key_input = st.text_input(
+            "Groq API key",
+            type="password",
+            placeholder="Paste your key here",
+            help="Get a free key at console.groq.com",
+            key="groq_key_input",
+        )
+        if api_key_input:
+            st.session_state.groq_api_key = api_key_input
+            st.rerun()
+    else:
+        st.success("API key set")
+        if st.button("Clear key"):
+            st.session_state.pop("groq_api_key", None)
+            st.rerun()
 
 st.title("📋 AutoPM AI")
 st.markdown("*Upload customer interviews and usage data. Ask what to build next.*")
@@ -226,7 +258,7 @@ if analyze_clicked:
 
             except ValueError as e:
                 st.error(str(e))
-                st.info("Create a `.env` file in the AutoPM-AI directory with: `GROQ_API_KEY=your_key_here`")
+                st.info("Add your Groq API key in the sidebar (or set GROQ_API_KEY in .env for local use)")
             except Exception as e:
                 st.error(f"An error occurred: {e}")
                 st.caption("Check your API key and network connection. If the issue persists, try again later.")
