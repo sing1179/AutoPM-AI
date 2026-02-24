@@ -124,43 +124,36 @@ def get_llm_client() -> OpenAI | None:
     )
 
 
-def get_recommendations(context: str, user_question: str) -> str:
-    """Call Groq API to get product recommendations."""
+CONVERSATION_SYSTEM = """You are a sharp, no-nonsense PM assistant. Your job is to give straight answers and move the conversation forward.
+
+RULES:
+1. **Be direct** — Answer what the PM actually asked. No preamble, no fluff.
+2. **Ask clarifying questions when needed** — If the question is vague, ambiguous, or you need context (e.g. "which users?", "what's the timeline?"), ask 1–2 short clarifying questions. Don't guess.
+3. **Use the data when you have it** — If documents are uploaded, cite specific evidence. If not, say so and ask them to upload.
+4. **Match the ask** — If they want prioritization, give priorities. If they want a summary, summarize. If they want tradeoffs, give tradeoffs.
+5. **Keep it concise** — Bullet points over paragraphs. Markdown when helpful.
+6. **Never lecture** — Skip the "As a product manager..." stuff. Just help."""
+
+
+def chat_turn(messages: list[dict], data_context: str | None) -> str:
+    """Call Groq with full conversation history. Returns assistant response."""
     client = get_llm_client()
     if not client:
         raise ValueError("API key required. Add your Groq API key in the sidebar (or set GROQ_API_KEY in .env).")
 
-    system_prompt = """You are an expert product manager analyzing customer feedback and usage data to recommend what to build next.
+    system = CONVERSATION_SYSTEM
+    if data_context:
+        system += "\n\n## Available data\nYou have access to the following uploaded documents. Use them when relevant.\n\n" + data_context
+    else:
+        system += "\n\n## Available data\nNone. If the user asks for analysis or recommendations, ask them to upload documents first."
 
-Your task is to:
-1. Analyze customer interviews and documents (from .txt, .md, .pdf, and other text-based files) for: pain points, feature requests, recurring themes, and unmet needs
-2. Analyze usage data (from .csv files) for: usage patterns, drop-offs, underutilized features, and growth opportunities
-3. Synthesize both data sources to produce 3-5 prioritized "what to build next" recommendations
-
-For each recommendation:
-- Provide a clear, actionable title
-- Cite specific evidence from the uploaded data (quote or reference specific findings)
-- Explain the impact/opportunity
-- Suggest a priority (High/Medium/Low) with justification
-
-Format your response in clean markdown with headers and bullet points. Be concise but thorough."""
-
-    user_prompt = f"""## Uploaded Data
-
-{context}
-
-## User Question
-
-{user_question}
-
-Please analyze the above data and provide your prioritized recommendations."""
+    api_messages = [{"role": "system", "content": system}]
+    for m in messages:
+        api_messages.append({"role": m["role"], "content": m["content"]})
 
     response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ],
+        messages=api_messages,
         temperature=0.3,
     )
     return response.choices[0].message.content
@@ -358,105 +351,60 @@ with st.sidebar:
         st.success("✓ Ready")
     st.caption("Formats: .txt, .md, .pdf, .docx, .csv")
 
-# Hero
-st.markdown("""
-<div style="text-align: center; padding: 2rem 0 1rem 0;">
-    <h1 style="font-size: 3.75rem; font-weight: 700; color: white; font-family: system-ui, sans-serif; line-height: 1.1; letter-spacing: -0.025em; margin: 0;">
-        Optimized for Thought<br/>Built for Action
-    </h1>
-    <p style="color: rgba(255,255,255,0.6); font-size: 1.125rem; margin-top: 1.5rem;">
-        Think smarter and act faster, from idea to execution in seconds.
-    </p>
-</div>
-""", unsafe_allow_html=True)
+# Initialize chat messages
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-# Main glass card - centered (ID for CSS targeting)
-st.markdown('<div id="main-glass-card"></div>', unsafe_allow_html=True)
-col_left, col_center, col_right = st.columns([1, 4, 1])
-with col_center:
-    # AI input + Generate button
-    col1, col2 = st.columns([5, 1])
-    with col1:
-        user_question = st.text_input(
-            "Ask your question",
-            value="What should we build next?",
-            placeholder="Ask for anything or use a command",
-            label_visibility="collapsed",
-            key="query_input",
-        )
-    with col2:
-        st.markdown("<div style='height: 38px;'></div>", unsafe_allow_html=True)
-        analyze_clicked = st.button("Generate", type="primary", use_container_width=True)
+# Hero - only when no messages yet
+if not st.session_state.messages:
+    st.markdown("""
+    <div style="text-align: center; padding: 2rem 0 1rem 0;">
+        <h1 style="font-size: 3.75rem; font-weight: 700; color: white; font-family: system-ui, sans-serif; line-height: 1.1; letter-spacing: -0.025em; margin: 0;">
+            Optimized for Thought<br/>Built for Action
+        </h1>
+        <p style="color: rgba(255,255,255,0.6); font-size: 1.125rem; margin-top: 1.5rem;">
+            Think smarter and act faster. Ask anything—or upload docs for analysis.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
-    # Upload and Feedback - same row
-    col_upload, col_feedback = st.columns([1, 1])
-    with col_upload:
-        uploaded_files = st.file_uploader(
-            "Upload documents",
-            type=None,
-            accept_multiple_files=True,
-            help="Interviews (.txt, .md, .pdf, .docx) • Usage data (.csv)",
-            key="file_upload",
-        )
-    with col_feedback:
-        st.markdown("<div style='height: 52px;'></div>", unsafe_allow_html=True)
-        st.markdown("""
-        <a href="#" style="display: inline-flex; align-items: center; gap: 8px; padding: 0.5rem 1rem; 
-           border-radius: 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
-           color: rgba(255,255,255,0.7); font-size: 0.875rem; text-decoration: none;">
-            💬 Feedback
-        </a>
-        """, unsafe_allow_html=True)
-
-# File preview
+# File upload
+uploaded_files = st.file_uploader(
+    "Upload documents (optional—you can chat first)",
+    type=None,
+    accept_multiple_files=True,
+    help="Interviews (.txt, .md, .pdf, .docx) • Usage data (.csv)",
+    key="file_upload",
+)
 if uploaded_files:
-    st.success(f"✓ {len(uploaded_files)} file(s) ready")
-    for uploaded_file in uploaded_files:
-        ext = get_file_extension(uploaded_file.name)
-        with st.expander(f"📄 {uploaded_file.name}", expanded=False):
-            if ext in USAGE_EXTENSIONS:
-                try:
-                    import pandas as pd
-                    uploaded_file.seek(0)
-                    df = pd.read_csv(uploaded_file)
-                    st.dataframe(df, use_container_width=True, hide_index=True)
-                except Exception as e:
-                    st.error(f"Could not parse CSV: {e}")
-                    st.code(read_file_content(uploaded_file))
-            else:
-                content = read_uploaded_file(uploaded_file)
-                st.text_area("Content", value=content, height=150, disabled=True, key=uploaded_file.name)
-elif not uploaded_files and not analyze_clicked:
-    st.markdown(
-        '<p style="text-align: center; color: rgba(255,255,255,0.4); font-size: 0.875rem; padding: 2rem;">'
-        'Upload documents to get AI-powered recommendations</p>',
-        unsafe_allow_html=True,
-    )
+    st.caption(f"✓ {len(uploaded_files)} file(s) attached to this conversation")
 
-# Results
-if analyze_clicked:
-    if not uploaded_files:
-        st.warning("Please upload at least one file before analyzing.")
-    elif not user_question or not user_question.strip():
-        st.warning("Please enter a question.")
-    else:
-        with st.spinner("Analyzing your data..."):
-            try:
-                context = build_context(uploaded_files)
-                recommendations = get_recommendations(context, user_question.strip())
+# Display chat history
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
 
-                import markdown
-                rec_html = markdown.markdown(recommendations, extensions=["fenced_code", "tables"])
-                st.markdown(
-                    f'<div class="glass-recommendations"><h3>📌 Recommendations</h3><div class="rec-content">{rec_html}</div></div>',
-                    unsafe_allow_html=True,
-                )
+# Chat input
+if prompt := st.chat_input("Ask anything—or upload docs for analysis"):
+    st.session_state.messages.append({"role": "user", "content": prompt})
 
-            except ValueError as e:
-                st.error(str(e))
-                st.info("Add your Groq API key in the sidebar (expand → Settings) or set GROQ_API_KEY in .env")
-            except Exception as e:
-                st.error(f"An error occurred: {e}")
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    with st.chat_message("assistant"):
+        data_context = build_context(uploaded_files) if uploaded_files else None
+        conv_for_api = [{"role": m["role"], "content": m["content"]} for m in st.session_state.messages]
+
+        try:
+            with st.spinner("Thinking..."):
+                response = chat_turn(conv_for_api, data_context)
+            st.markdown(response)
+            st.session_state.messages.append({"role": "assistant", "content": response})
+        except ValueError as e:
+            st.error(str(e))
+            st.info("Add your Groq API key in the sidebar (expand → Settings) or set GROQ_API_KEY in .env")
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
 
 # Trusted by section
 st.markdown("""
