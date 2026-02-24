@@ -167,10 +167,58 @@ Please analyze the above data and provide your prioritized recommendations."""
 
 # --- UI ---
 
-# Sidebar: API key input only when not set via env (e.g. Streamlit secrets)
-# When you add GROQ_API_KEY in Streamlit Cloud secrets, this section is hidden
-if not get_api_key():
-    with st.sidebar:
+# Custom CSS for polish
+st.markdown("""
+<style>
+    .hero {
+        padding: 1.5rem 0;
+        margin-bottom: 1rem;
+    }
+    .hero h1 {
+        font-size: 2.25rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 0.25rem;
+    }
+    .hero p {
+        color: #64748b;
+        font-size: 1.1rem;
+    }
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 0.5rem;
+    }
+    .metric-card {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        padding: 1rem 1.25rem;
+        border-radius: 0.5rem;
+        border: 1px solid #bae6fd;
+        margin-bottom: 0.5rem;
+    }
+    .metric-card strong {
+        color: #0369a1;
+    }
+    div[data-testid="stFileUploader"] {
+        border: 2px dashed #cbd5e1;
+        border-radius: 0.5rem;
+        padding: 2rem;
+        background: #f8fafc;
+    }
+    div[data-testid="stFileUploader"]:hover {
+        border-color: #2563eb;
+        background: #fff;
+    }
+    .stMarkdown h3 { margin-top: 1.25rem; color: #1e293b; }
+    .stMarkdown ul { margin: 0.5rem 0; }
+    .stMarkdown li { margin: 0.25rem 0; }
+</style>
+""", unsafe_allow_html=True)
+
+# Sidebar
+with st.sidebar:
+    st.markdown("### AutoPM AI")
+    st.caption("Figure out *what* to build next.")
+    st.divider()
+    if not get_api_key():
         st.caption("🔑 API Key")
         api_key_input = st.text_input(
             "Groq API key",
@@ -182,25 +230,30 @@ if not get_api_key():
         if api_key_input:
             st.session_state.groq_api_key = api_key_input
             st.rerun()
+    else:
+        st.success("✓ Ready")
+    st.divider()
+    st.caption("**Supported formats**")
+    st.caption("Interviews: .txt, .md, .pdf, .docx")
+    st.caption("Data: .csv")
 
+# Hero
+st.markdown('<div class="hero">', unsafe_allow_html=True)
 st.title("📋 AutoPM AI")
 st.markdown("*Upload customer interviews and usage data. Ask what to build next.*")
-st.divider()
+st.markdown('</div>', unsafe_allow_html=True)
 
-# File upload section
-st.subheader("📁 Upload Files")
-st.caption("Accepts any file: .txt, .md, .pdf, .docx, .csv, .json, and more. Documents are extracted for analysis.")
-
+# File upload
 uploaded_files = st.file_uploader(
-    "Drag and drop or browse",
-    type=None,  # Accept all file types
+    "**Drag and drop files here** — or browse",
+    type=None,
     accept_multiple_files=True,
+    help="Interviews (.txt, .md, .pdf, .docx) • Usage data (.csv)",
 )
 
-# Display uploaded files
+# File preview
 if uploaded_files:
-    st.success(f"Uploaded {len(uploaded_files)} file(s)")
-
+    st.success(f"✓ {len(uploaded_files)} file(s) ready")
     for uploaded_file in uploaded_files:
         ext = get_file_extension(uploaded_file.name)
         with st.expander(f"📄 {uploaded_file.name}", expanded=False):
@@ -216,13 +269,14 @@ if uploaded_files:
             else:
                 content = read_uploaded_file(uploaded_file)
                 st.text_area("Content", value=content, height=150, disabled=True, key=uploaded_file.name)
+else:
+    st.info("👆 Upload customer interviews and/or usage data to get started")
 
-st.divider()
-
-# Question input and analyze
+# Question input
+st.markdown("---")
 st.subheader("💡 What should we build next?")
 
-col1, col2 = st.columns([3, 1])
+col1, col2 = st.columns([4, 1])
 
 with col1:
     user_question = st.text_input(
@@ -235,9 +289,9 @@ with col1:
 with col2:
     analyze_clicked = st.button("Get Recommendations", type="primary", use_container_width=True)
 
-st.divider()
+st.markdown("---")
 
-# Results section
+# Results
 if analyze_clicked:
     if not uploaded_files:
         st.warning("Please upload at least one file (customer interviews or usage data) before analyzing.")
