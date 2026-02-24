@@ -83,7 +83,11 @@ Deploy the app so anyone can use it:
 - **[Streamlit Community Cloud](https://share.streamlit.io)** — Connect GitHub, deploy in one click. Free.
 - **[Hugging Face Spaces](https://huggingface.co/spaces)** — Free hosting for AI apps.
 
-See [DEPLOY.md](DEPLOY.md) for step-by-step instructions.
+**To hide the API key prompt:** Add your Groq API key in Streamlit Cloud → App settings → Secrets:
+```
+GROQ_API_KEY = "gsk_your_key_here"
+```
+The key stays server-side; users never see it. Groq free tier = no cost.
 
 ---
 

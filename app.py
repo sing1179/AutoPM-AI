@@ -167,10 +167,11 @@ Please analyze the above data and provide your prioritized recommendations."""
 
 # --- UI ---
 
-# Sidebar: API key input (for deployed use when env var not set)
-with st.sidebar:
-    st.caption("🔑 API Key")
-    if not get_api_key():
+# Sidebar: API key input only when not set via env (e.g. Streamlit secrets)
+# When you add GROQ_API_KEY in Streamlit Cloud secrets, this section is hidden
+if not get_api_key():
+    with st.sidebar:
+        st.caption("🔑 API Key")
         api_key_input = st.text_input(
             "Groq API key",
             type="password",
@@ -180,11 +181,6 @@ with st.sidebar:
         )
         if api_key_input:
             st.session_state.groq_api_key = api_key_input
-            st.rerun()
-    else:
-        st.success("API key set")
-        if st.button("Clear key"):
-            st.session_state.pop("groq_api_key", None)
             st.rerun()
 
 st.title("📋 AutoPM AI")
