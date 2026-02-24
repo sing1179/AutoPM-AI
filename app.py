@@ -166,50 +166,179 @@ Please analyze the above data and provide your prioritized recommendations."""
 
 
 # --- UI ---
+# Redefined Glass Page Design - Glassmorphism style
 
-# Custom CSS for polish
 st.markdown("""
 <style>
-    .hero {
-        padding: 1.5rem 0;
-        margin-bottom: 1rem;
+    /* Base: dark gradient background */
+    .stApp {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #0c4a6e 50%, #1e3a5f 75%, #0f172a 100%);
+        background-attachment: fixed;
     }
-    .hero h1 {
-        font-size: 2.25rem;
+    
+    /* Glass sidebar */
+    [data-testid="stSidebar"] {
+        background: rgba(15, 23, 42, 0.6) !important;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    
+    [data-testid="stSidebar"] .stMarkdown {
+        color: rgba(255, 255, 255, 0.9) !important;
+    }
+    
+    [data-testid="stSidebar"] .stCaption {
+        color: rgba(255, 255, 255, 0.6) !important;
+    }
+    
+    /* Hero section - glass card */
+    .hero-glass {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-radius: 20px;
+        padding: 2rem 2.5rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+    
+    .hero-glass h1 {
+        font-size: 2.5rem;
         font-weight: 700;
-        color: #1e293b;
-        margin-bottom: 0.25rem;
+        color: #f8fafc !important;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.02em;
     }
-    .hero p {
-        color: #64748b;
+    
+    .hero-glass p {
+        color: rgba(248, 250, 252, 0.8) !important;
         font-size: 1.1rem;
     }
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 0.5rem;
+    
+    /* File uploader - glass container */
+    div[data-testid="stFileUploader"] {
+        background: rgba(255, 255, 255, 0.06) !important;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 2.5rem;
+        transition: all 0.3s ease;
     }
-    .metric-card {
-        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-        padding: 1rem 1.25rem;
-        border-radius: 0.5rem;
-        border: 1px solid #bae6fd;
+    
+    div[data-testid="stFileUploader"]:hover {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border-color: rgba(148, 163, 184, 0.3);
+    }
+    
+    div[data-testid="stFileUploader"] section {
+        background: transparent !important;
+        border: none !important;
+    }
+    
+    /* Expanders - glass cards */
+    .streamlit-expanderHeader {
+        background: rgba(255, 255, 255, 0.06) !important;
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    
+    /* Recommendations output - glass card */
+    .glass-recommendations {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-top: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    }
+    
+    .glass-recommendations h3 {
+        color: #f8fafc !important;
+        margin-top: 0;
+        margin-bottom: 1rem;
+    }
+    
+    .glass-recommendations .rec-content {
+        color: rgba(248, 250, 252, 0.95);
+        line-height: 1.6;
+    }
+    
+    .glass-recommendations .rec-content h1, .glass-recommendations .rec-content h2, .glass-recommendations .rec-content h3 {
+        color: #f8fafc !important;
+    }
+    
+    .glass-recommendations .rec-content ul, .glass-recommendations .rec-content ol {
+        margin: 0.5rem 0;
+    }
+    
+    /* Main content text - light for dark bg */
+    .main .stMarkdown {
+        color: rgba(248, 250, 252, 0.95) !important;
+    }
+    
+    .main .stMarkdown h1, .main .stMarkdown h2, .main .stMarkdown h3 {
+        color: #f8fafc !important;
+    }
+    
+    .main label {
+        color: rgba(248, 250, 252, 0.9) !important;
+    }
+    
+    /* Primary button - glass style */
+    .stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, rgba(56, 189, 248, 0.4) 0%, rgba(14, 165, 233, 0.4) 100%) !important;
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(56, 189, 248, 0.5);
+        color: #f8fafc !important;
+        font-weight: 600;
+        border-radius: 12px;
+        transition: all 0.2s ease;
+    }
+    
+    .stButton > button[kind="primary"]:hover {
+        background: linear-gradient(135deg, rgba(56, 189, 248, 0.5) 0%, rgba(14, 165, 233, 0.5) 100%) !important;
+        border-color: rgba(56, 189, 248, 0.7);
+        box-shadow: 0 4px 20px rgba(56, 189, 248, 0.2);
+    }
+    
+    /* Dividers */
+    hr {
+        border-color: rgba(255, 255, 255, 0.08) !important;
+    }
+    
+    /* Success / info / warning - glass-friendly */
+    [data-testid="stAlert"] {
+        background: rgba(255, 255, 255, 0.08) !important;
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+    }
+    
+    /* Text input - glass style */
+    .stTextInput input {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        color: #f8fafc !important;
+        border-radius: 10px;
+    }
+    
+    .stTextInput input::placeholder {
+        color: rgba(248, 250, 252, 0.5);
+    }
+    
+    /* Expander content */
+    [data-testid="stExpander"] {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
         margin-bottom: 0.5rem;
     }
-    .metric-card strong {
-        color: #0369a1;
-    }
-    div[data-testid="stFileUploader"] {
-        border: 2px dashed #cbd5e1;
-        border-radius: 0.5rem;
-        padding: 2rem;
-        background: #f8fafc;
-    }
-    div[data-testid="stFileUploader"]:hover {
-        border-color: #2563eb;
-        background: #fff;
-    }
-    .stMarkdown h3 { margin-top: 1.25rem; color: #1e293b; }
-    .stMarkdown ul { margin: 0.5rem 0; }
-    .stMarkdown li { margin: 0.25rem 0; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -237,11 +366,12 @@ with st.sidebar:
     st.caption("Interviews: .txt, .md, .pdf, .docx")
     st.caption("Data: .csv")
 
-# Hero
-st.markdown('<div class="hero">', unsafe_allow_html=True)
-st.title("📋 AutoPM AI")
-st.markdown("*Upload customer interviews and usage data. Ask what to build next.*")
-st.markdown('</div>', unsafe_allow_html=True)
+# Hero - Glass card
+st.markdown(
+    '<div class="hero-glass"><h3 style="margin:0;font-size:2rem;">📋 AutoPM AI</h3>'
+    '<p style="margin:0.5rem 0 0 0;opacity:0.9;">Upload customer interviews and usage data. Ask what to build next.</p></div>',
+    unsafe_allow_html=True,
+)
 
 # File upload
 uploaded_files = st.file_uploader(
@@ -303,8 +433,12 @@ if analyze_clicked:
                 context = build_context(uploaded_files)
                 recommendations = get_recommendations(context, user_question.strip())
 
-                st.subheader("📌 Recommendations")
-                st.markdown(recommendations)
+                import markdown
+                rec_html = markdown.markdown(recommendations, extensions=["fenced_code", "tables"])
+                st.markdown(
+                    f'<div class="glass-recommendations"><h3>📌 Recommendations</h3><div class="rec-content">{rec_html}</div></div>',
+                    unsafe_allow_html=True,
+                )
 
             except ValueError as e:
                 st.error(str(e))
