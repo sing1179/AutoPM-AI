@@ -167,91 +167,56 @@ Please analyze the above data and provide your prioritized recommendations."""
 
 # --- UI ---
 
-# Initialize session state for quick actions
-if "selected_prompt" not in st.session_state:
-    st.session_state.selected_prompt = "What should we build next?"
-
-# Custom CSS - inspired by glassmorphism + Omnix aesthetic
-# Use multiple selectors for compatibility across Streamlit versions
+# Custom CSS for polish
 st.markdown("""
 <style>
-    /* Gradient background - multiple selectors for Streamlit compatibility */
-    html, body, #root,
-    section[data-testid="stApp"],
-    div[data-testid="stApp"],
-    [data-testid="stAppViewContainer"],
-    .stApp {
-        background: linear-gradient(135deg, #fef7ed 0%, #fce7f3 40%, #e0e7ff 100%) !important;
+    .hero {
+        padding: 1.5rem 0;
+        margin-bottom: 1rem;
     }
-    
-    /* Block container - main content area */
-    div.block-container {
-        padding-top: 2rem !important;
-        max-width: 900px !important;
+    .hero h1 {
+        font-size: 2.25rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 0.25rem;
     }
-    
-    /* Hero - centered, bold */
-    .hero-box {
-        text-align: center;
-        padding: 2rem 0 2.5rem;
+    .hero p {
+        color: #64748b;
+        font-size: 1.1rem;
     }
-    .hero-box h1 { font-size: 2.5rem !important; font-weight: 700 !important; margin-bottom: 0.5rem !important; }
-    .hero-box .tagline { font-size: 1.15rem !important; color: #64748b !important; }
-    
-    /* Input card - glassmorphism */
-    .input-card {
-        background: rgba(255,255,255,0.85) !important;
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(139,92,246,0.2) !important;
-        border-radius: 1rem !important;
-        padding: 1.5rem !important;
-        margin: 1rem 0 !important;
-        box-shadow: 0 8px 32px rgba(139,92,246,0.15) !important;
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 0.5rem;
     }
-    
-    /* Text input - pill shape */
-    input[data-testid="stTextInput"] {
-        border-radius: 2rem !important;
+    .metric-card {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        padding: 1rem 1.25rem;
+        border-radius: 0.5rem;
+        border: 1px solid #bae6fd;
+        margin-bottom: 0.5rem;
     }
-    div[data-testid="stTextInput"] > div {
-        border-radius: 2rem !important;
-        background: rgba(248,250,252,0.95) !important;
+    .metric-card strong {
+        color: #0369a1;
     }
-    
-    /* Glowing purple Generate button */
-    .stButton > button {
-        border-radius: 0.75rem !important;
-        font-weight: 600 !important;
-    }
-    .stButton > button[kind="primary"],
-    div[data-testid="column"] .stButton > button {
-        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%) !important;
-        box-shadow: 0 0 20px rgba(139,92,246,0.4) !important;
-        border: none !important;
-    }
-    .stButton > button[kind="primary"]:hover {
-        box-shadow: 0 0 28px rgba(139,92,246,0.6) !important;
-    }
-    
-    /* File uploader - dashed purple border */
-    section[data-testid="stFileUploader"],
     div[data-testid="stFileUploader"] {
-        border: 2px dashed rgba(139,92,246,0.5) !important;
-        border-radius: 1rem !important;
-        padding: 2rem !important;
-        background: rgba(255,255,255,0.6) !important;
+        border: 2px dashed #cbd5e1;
+        border-radius: 0.5rem;
+        padding: 2rem;
+        background: #f8fafc;
     }
-    
-    .stMarkdown h3 { margin-top: 1.25rem !important; }
-    
+    div[data-testid="stFileUploader"]:hover {
+        border-color: #2563eb;
+        background: #fff;
+    }
+    .stMarkdown h3 { margin-top: 1.25rem; color: #1e293b; }
+    .stMarkdown ul { margin: 0.5rem 0; }
+    .stMarkdown li { margin: 0.25rem 0; }
 </style>
 """, unsafe_allow_html=True)
 
 # Sidebar
 with st.sidebar:
     st.markdown("### AutoPM AI")
-    st.caption("Optimized for thought. Built for action.")
+    st.caption("Figure out *what* to build next.")
     st.divider()
     if not get_api_key():
         st.caption("🔑 API Key")
@@ -272,17 +237,15 @@ with st.sidebar:
     st.caption("Interviews: .txt, .md, .pdf, .docx")
     st.caption("Data: .csv")
 
-# Hero - inline styles for reliability (CSS classes may not apply in all Streamlit versions)
-st.markdown("""
-<div style="text-align: center; padding: 2rem 0 2.5rem;">
-    <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem;">📋 AutoPM AI</h1>
-    <p style="font-size: 1.15rem; color: #64748b;">Think smarter. Act faster. From idea to execution.</p>
-</div>
-""", unsafe_allow_html=True)
+# Hero
+st.markdown('<div class="hero">', unsafe_allow_html=True)
+st.title("📋 AutoPM AI")
+st.markdown("*Upload customer interviews and usage data. Ask what to build next.*")
+st.markdown('</div>', unsafe_allow_html=True)
 
 # File upload
 uploaded_files = st.file_uploader(
-    "**+ Add files** — Drag and drop or browse",
+    "**Drag and drop files here** — or browse",
     type=None,
     accept_multiple_files=True,
     help="Interviews (.txt, .md, .pdf, .docx) • Usage data (.csv)",
@@ -307,38 +270,26 @@ if uploaded_files:
                 content = read_uploaded_file(uploaded_file)
                 st.text_area("Content", value=content, height=150, disabled=True, key=uploaded_file.name)
 else:
-    st.info("👆 Upload customer interviews and usage data to get started")
+    st.info("👆 Upload customer interviews and/or usage data to get started")
 
-# Main input card
-st.markdown("**✨ Ask for anything or use a command**")
+# Question input
+st.markdown("---")
+st.subheader("💡 What should we build next?")
 
-# Quick action buttons (like Omnix suggested prompts)
-quick_prompts = [
-    "What should we build next?",
-    "Prioritize features from feedback",
-    "Identify top pain points",
-]
-cols = st.columns(len(quick_prompts))
-for i, prompt in enumerate(quick_prompts):
-    with cols[i]:
-        if st.button(f"📌 {prompt}", key=f"quick_{i}", use_container_width=True):
-            st.session_state.selected_prompt = prompt
-            st.rerun()
-
-# Pill-shaped input + Generate button
 col1, col2 = st.columns([4, 1])
+
 with col1:
     user_question = st.text_input(
-        "Your question here",
-        value=st.session_state.selected_prompt,
-        placeholder="Ask for anything or use a command",
+        "Ask your question",
+        value="What should we build next?",
+        placeholder="What should we build next?",
         label_visibility="collapsed",
-        key="main_question",
     )
-with col2:
-    analyze_clicked = st.button("Generate →", type="primary", use_container_width=True)
 
-st.markdown('</div>', unsafe_allow_html=True)
+with col2:
+    analyze_clicked = st.button("Get Recommendations", type="primary", use_container_width=True)
+
+st.markdown("---")
 
 # Results
 if analyze_clicked:
