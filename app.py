@@ -292,23 +292,45 @@ st.markdown("""
     }
     [data-testid="stExpander"] .stMarkdown, [data-testid="stExpander"] p { color: #ffffff !important; }
     
-    /* Chat input fixed at bottom - main area has one form (chat) */
-    .main [data-testid="stForm"],
-    .main form {
+    /* Chat input - black box, golden/white font, fixed at bottom below content */
+    #chat-form-anchor ~ div [data-testid="stForm"],
+    #chat-form-anchor ~ div form,
+    .main [data-testid="stForm"]:last-of-type,
+    .main form:last-of-type {
         position: fixed !important;
         bottom: 0 !important;
         left: 0 !important;
         right: 0 !important;
-        background: rgba(0, 0, 0, 0.85) !important;
+        background: #0a0a0a !important;
         backdrop-filter: blur(16px);
         padding: 1rem 2rem 1.5rem !important;
-        border-top: 1px solid rgba(255, 255, 255, 0.12);
+        border-top: 1px solid rgba(245, 158, 11, 0.3);
         z-index: 1000;
         margin: 0 !important;
     }
+    /* Prompt box: black background, golden/white text */
     .main [data-testid="stForm"] textarea,
     .main form textarea {
-        color: #ffffff !important; background: rgba(255,255,255,0.08) !important;
+        background: #000000 !important;
+        border: 1px solid rgba(245, 158, 11, 0.4) !important;
+        color: #fbbf24 !important;
+        caret-color: #ffffff !important;
+    }
+    .main [data-testid="stForm"] textarea::placeholder,
+    .main form textarea::placeholder {
+        color: rgba(251, 191, 36, 0.7) !important;
+    }
+    .main [data-testid="stForm"] textarea:focus,
+    .main form textarea:focus {
+        color: #ffffff !important;
+        border-color: rgba(245, 158, 11, 0.6) !important;
+    }
+    /* Send button - golden accent */
+    .main [data-testid="stForm"] button,
+    .main form button[type="submit"] {
+        background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%) !important;
+        color: #ffffff !important;
+        border: none !important;
     }
     
     /* Add bottom padding so content is not hidden behind fixed input */
@@ -420,7 +442,21 @@ for i, msg in enumerate(st.session_state.messages):
                     with st.expander("📄 View spec"):
                         st.code(md, language="markdown")
 
-# Chat input - visible text box (st.chat_input can be hidden on some layouts)
+# Trusted by section - before chat input so input is last
+st.markdown("""
+<div style="text-align: center; padding: 3rem 0 2rem 0;">
+    <p style="color: rgba(255,255,255,0.85); font-size: 0.875rem; margin-bottom: 1.5rem;">Trusted by</p>
+    <div style="display: flex; align-items: center; justify-content: center; gap: 3rem; opacity: 0.4;">
+        <span style="color: white; font-size: 1.125rem; font-weight: 600;">Atlassian</span>
+        <span style="color: white; font-size: 1.125rem; font-weight: 600;">Notion</span>
+        <span style="color: white; font-size: 1.125rem; font-weight: 600;">Linear</span>
+        <span style="color: white; font-size: 1.125rem; font-weight: 600;">GitHub</span>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# Chat input - at bottom, below all content
+st.markdown('<div id="chat-form-anchor"></div>', unsafe_allow_html=True)
 with st.form("chat_form", clear_on_submit=True):
     prompt = st.text_area(
         "Message",
@@ -461,19 +497,6 @@ if submitted and prompt and prompt.strip():
                 st.info("Add your Groq API key in the sidebar (expand → Settings) or set GROQ_API_KEY in .env")
             except Exception as e:
                 st.error(f"An error occurred: {e}")
-
-# Trusted by section
-st.markdown("""
-<div style="text-align: center; padding: 3rem 0 2rem 0;">
-    <p style="color: rgba(255,255,255,0.85); font-size: 0.875rem; margin-bottom: 1.5rem;">Trusted by</p>
-    <div style="display: flex; align-items: center; justify-content: center; gap: 3rem; opacity: 0.4;">
-        <span style="color: white; font-size: 1.125rem; font-weight: 600;">Atlassian</span>
-        <span style="color: white; font-size: 1.125rem; font-weight: 600;">Notion</span>
-        <span style="color: white; font-size: 1.125rem; font-weight: 600;">Linear</span>
-        <span style="color: white; font-size: 1.125rem; font-weight: 600;">GitHub</span>
-    </div>
-</div>
-""", unsafe_allow_html=True)
 
 # Help button - above chat input
 st.markdown("""
