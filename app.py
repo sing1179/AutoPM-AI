@@ -310,10 +310,11 @@ st.markdown("""
         z-index: 1000;
         margin: 0 !important;
     }
-    /* Prompt box - Redefined RecommendationInput: bg-white/5 border-white/10 text-white placeholder-white/40 */
+    /* Prompt box - Figma RecommendationInput: rounded-2xl bg-white/5 backdrop-blur-sm border-white/10 */
     .main [data-testid="stForm"] textarea,
     .main form textarea {
         background: rgba(255, 255, 255, 0.05) !important;
+        backdrop-filter: blur(4px);
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
         color: #ffffff !important;
         caret-color: #ffffff !important;
@@ -340,8 +341,8 @@ st.markdown("""
         background: rgba(255, 255, 255, 0.2) !important;
     }
     
-    /* Add bottom padding so content is not hidden behind fixed input */
-    .main .block-container { padding-bottom: 180px !important; }
+    /* Add bottom padding so content is not hidden behind fixed card */
+    .main .block-container { padding-bottom: 280px !important; }
     
     /* Hide Streamlit branding */
     #MainMenu { visibility: hidden; }
@@ -408,7 +409,7 @@ if "last_spec" not in st.session_state:
 if "last_critique" not in st.session_state:
     st.session_state.last_critique = None
 
-# Hero - only when no messages yet
+# Hero - only when no messages yet (Figma: hidden when interacting)
 if not st.session_state.messages:
     st.markdown("""
     <div style="text-align: center; padding: 2rem 0 1rem 0;">
@@ -420,17 +421,6 @@ if not st.session_state.messages:
         </p>
     </div>
     """, unsafe_allow_html=True)
-
-# File upload
-uploaded_files = st.file_uploader(
-    "Upload documents (optional—you can chat first)",
-    type=None,
-    accept_multiple_files=True,
-    help="Interviews (.txt, .md, .pdf, .docx) • Usage data (.csv)",
-    key="file_upload",
-)
-if uploaded_files:
-    st.caption(f"✓ {len(uploaded_files)} file(s) attached to this conversation")
 
 # Display chat history
 for i, msg in enumerate(st.session_state.messages):
@@ -456,30 +446,69 @@ for i, msg in enumerate(st.session_state.messages):
                     with st.expander("📄 View spec"):
                         st.code(md, language="markdown")
 
-# Trusted by section - before chat input so input is last
-st.markdown("""
-<div style="text-align: center; padding: 3rem 0 2rem 0;">
-    <p style="color: rgba(255,255,255,0.85); font-size: 0.875rem; margin-bottom: 1.5rem;">Trusted by</p>
-    <div style="display: flex; align-items: center; justify-content: center; gap: 3rem; opacity: 0.4;">
-        <span style="color: white; font-size: 1.125rem; font-weight: 600;">Atlassian</span>
-        <span style="color: white; font-size: 1.125rem; font-weight: 600;">Notion</span>
-        <span style="color: white; font-size: 1.125rem; font-weight: 600;">Linear</span>
-        <span style="color: white; font-size: 1.125rem; font-weight: 600;">GitHub</span>
+# Trusted by - Figma: hidden when interacting (has messages)
+if not st.session_state.messages:
+    st.markdown("""
+    <div style="text-align: center; padding: 3rem 0 2rem 0;">
+        <p style="color: rgba(255,255,255,0.4); font-size: 0.875rem; margin-bottom: 1.5rem;">Trusted by</p>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 3rem; opacity: 0.4;">
+            <span style="color: white; font-size: 1.125rem; font-weight: 600;">Atlassian</span>
+            <span style="color: white; font-size: 1.125rem; font-weight: 600;">Notion</span>
+            <span style="color: white; font-size: 1.125rem; font-weight: 600;">Linear</span>
+            <span style="color: white; font-size: 1.125rem; font-weight: 600;">GitHub</span>
+        </div>
     </div>
-</div>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
-# Chat input - at bottom, below all content
+# Glass card - Figma: input first, then Upload + Feedback on same line
 st.markdown('<div id="chat-form-anchor"></div>', unsafe_allow_html=True)
+
+# RecommendationInput: Logo + textarea + Generate (Figma exact)
 with st.form("chat_form", clear_on_submit=True):
-    prompt = st.text_area(
-        "Message",
-        placeholder="Ask anything—or type 'generate spec' for implementation-ready output",
-        label_visibility="collapsed",
-        height=100,
-        key="chat_input",
+    col_logo, col_input = st.columns([0.5, 12])
+    with col_logo:
+        st.markdown("""
+        <div style="padding-top: 1rem;">
+            <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 20px; height: 20px;">
+                <circle cx="12" cy="16" r="10" fill="black" stroke="white" stroke-width="2"/>
+                <text x="12" y="21" font-size="10" font-weight="bold" fill="white" text-anchor="middle">PM</text>
+                <circle cx="20" cy="16" r="10" fill="black" stroke="white" stroke-width="2"/>
+                <text x="20" y="21" font-size="10" font-weight="bold" fill="white" text-anchor="middle">AI</text>
+            </svg>
+        </div>
+        """, unsafe_allow_html=True)
+    with col_input:
+        prompt = st.text_area(
+            "Message",
+            placeholder="Ask for anything or use a command",
+            label_visibility="collapsed",
+            height=100,
+            key="chat_input",
+        )
+    submitted = st.form_submit_button("Generate")
+
+# Upload + Feedback on same line (Figma: below input, in glass card)
+col_upload, col_feedback, _ = st.columns([2, 1, 3])
+with col_upload:
+    uploaded_files = st.file_uploader(
+        "Upload documents",
+        type=None,
+        accept_multiple_files=True,
+        help="Interviews (.txt, .md, .pdf, .docx) • Usage data (.csv)",
+        key="file_upload",
     )
-    submitted = st.form_submit_button("Send")
+with col_feedback:
+    st.markdown("""
+    <div style="padding-top: 0.5rem;">
+        <button style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; 
+            border-radius: 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
+            color: rgba(255,255,255,0.7); font-size: 0.875rem; cursor: pointer; 
+            transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" 
+            onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.color='rgba(255,255,255,0.7)';">
+            <span style="font-size: 1rem;">💬</span> Feedback
+        </button>
+    </div>
+    """, unsafe_allow_html=True)
 
 if submitted and prompt and prompt.strip():
     prompt = prompt.strip()
