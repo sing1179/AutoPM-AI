@@ -141,11 +141,11 @@ def wants_spec(prompt: str) -> bool:
 
 
 # --- UI ---
-# Figma design: black bg, dotted grid, amber/orange orbs, nav bar, hero, glass card
+# Redefined Glass Page Design: black bg, dotted grid, amber/orange orbs, glass card
 
 st.markdown("""
 <style>
-    /* Base: black background with dotted grid */
+    /* Base: black background with dotted grid (Redefined: rgba 0.1) */
     .stApp {
         background: #000000 !important;
     }
@@ -154,7 +154,7 @@ st.markdown("""
         content: '';
         position: fixed;
         inset: 0;
-        background-image: radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px);
+        background-image: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
         background-size: 40px 40px;
         pointer-events: none;
         z-index: 0;
@@ -178,7 +178,7 @@ st.markdown("""
     [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] label { color: rgba(255,255,255,0.9) !important; }
     [data-testid="stSidebar"] .stCaption { color: rgba(255,255,255,0.6) !important; }
     
-    /* Main glass card - middle column in first columns layout */
+    /* Main glass card - Redefined: rounded-3xl bg-black/40 backdrop-blur-xl border-white/10 */
     .figma-glass-card {
         background: rgba(0, 0, 0, 0.4);
         backdrop-filter: blur(24px);
@@ -201,7 +201,7 @@ st.markdown("""
     }
     
     
-    /* File uploader - glass style */
+    /* File uploader - Redefined: bg-white/5 border-white/10 */
     div[data-testid="stFileUploader"] {
         background: rgba(255, 255, 255, 0.05) !important;
         backdrop-filter: blur(12px);
@@ -236,7 +236,7 @@ st.markdown("""
         border-color: rgba(255, 255, 255, 0.25);
     }
     
-    /* Secondary buttons */
+    /* Secondary buttons - Redefined: bg-white/5 border-white/10, hover:bg-white/10 */
     .stButton > button:not([kind="primary"]) {
         background: rgba(255, 255, 255, 0.05) !important;
         border: 1px solid rgba(255, 255, 255, 0.1);
@@ -246,6 +246,7 @@ st.markdown("""
     
     .stButton > button:hover:not([kind="primary"]) {
         background: rgba(255, 255, 255, 0.1) !important;
+        color: #ffffff !important;
     }
     
     /* Main content text - bright for readability */
@@ -292,7 +293,7 @@ st.markdown("""
     }
     [data-testid="stExpander"] .stMarkdown, [data-testid="stExpander"] p { color: #ffffff !important; }
     
-    /* Chat input - black box, golden/white font, fixed at bottom below content */
+    /* Chat input - Redefined glass: fixed at bottom, bg-black/40 backdrop-blur-xl */
     #chat-form-anchor ~ div [data-testid="stForm"],
     #chat-form-anchor ~ div form,
     .main [data-testid="stForm"]:last-of-type,
@@ -301,36 +302,42 @@ st.markdown("""
         bottom: 0 !important;
         left: 0 !important;
         right: 0 !important;
-        background: #0a0a0a !important;
-        backdrop-filter: blur(16px);
+        background: rgba(0, 0, 0, 0.4) !important;
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
         padding: 1rem 2rem 1.5rem !important;
-        border-top: 1px solid rgba(245, 158, 11, 0.3);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
         z-index: 1000;
         margin: 0 !important;
     }
-    /* Prompt box: black background, golden/white text */
+    /* Prompt box - Redefined RecommendationInput: bg-white/5 border-white/10 text-white placeholder-white/40 */
     .main [data-testid="stForm"] textarea,
     .main form textarea {
-        background: #000000 !important;
-        border: 1px solid rgba(245, 158, 11, 0.4) !important;
-        color: #fbbf24 !important;
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: #ffffff !important;
         caret-color: #ffffff !important;
+        border-radius: 16px !important;
     }
     .main [data-testid="stForm"] textarea::placeholder,
     .main form textarea::placeholder {
-        color: rgba(251, 191, 36, 0.7) !important;
+        color: rgba(255, 255, 255, 0.4) !important;
     }
     .main [data-testid="stForm"] textarea:focus,
     .main form textarea:focus {
-        color: #ffffff !important;
-        border-color: rgba(245, 158, 11, 0.6) !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+        border-color: rgba(255, 255, 255, 0.2) !important;
     }
-    /* Send button - golden accent */
+    /* Send button - Redefined: bg-white/10 border-white/10 */
     .main [data-testid="stForm"] button,
     .main form button[type="submit"] {
-        background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%) !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
         color: #ffffff !important;
-        border: none !important;
+    }
+    .main [data-testid="stForm"] button:hover,
+    .main form button[type="submit"]:hover {
+        background: rgba(255, 255, 255, 0.2) !important;
     }
     
     /* Add bottom padding so content is not hidden behind fixed input */
@@ -342,22 +349,29 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Glowing orbs (behind content)
+# Glowing orbs - Redefined: amber-500/40 center, orange-400/30 bottom-right
 st.markdown("""
 <style>@keyframes orb-pulse { 0%,100%{opacity:0.8} 50%{opacity:1} }</style>
 <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-    width: 800px; height: 800px; background: rgba(245, 158, 11, 0.25); border-radius: 50%; 
+    width: 800px; height: 800px; background: rgba(245, 158, 11, 0.4); border-radius: 50%; 
     filter: blur(120px); pointer-events: none; z-index: 0; animation: orb-pulse 4s ease-in-out infinite;"></div>
 <div style="position: fixed; bottom: 0; right: 0; width: 600px; height: 600px; 
-    background: rgba(251, 146, 60, 0.2); border-radius: 50%; filter: blur(100px); 
+    background: rgba(251, 146, 60, 0.3); border-radius: 50%; filter: blur(100px); 
     pointer-events: none; z-index: 0;"></div>
 """, unsafe_allow_html=True)
 
-# Nav bar
+# Nav bar - Redefined: Logo (PM+AI circles) + AutoPM-AI
 st.markdown("""
 <div style="display: flex; align-items: center; justify-content: space-between; padding: 1.5rem 2rem; margin: -1rem -1rem 1rem -1rem;">
     <div style="display: flex; align-items: center; gap: 12px;">
-        <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: white;">AI</div>
+        <div style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
+            <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 36px; height: 36px;">
+                <circle cx="12" cy="16" r="10" fill="black" stroke="white" stroke-width="2"/>
+                <text x="12" y="21" font-size="10" font-weight="bold" fill="white" text-anchor="middle">PM</text>
+                <circle cx="20" cy="16" r="10" fill="black" stroke="white" stroke-width="2"/>
+                <text x="20" y="21" font-size="10" font-weight="bold" fill="white" text-anchor="middle">AI</text>
+            </svg>
+        </div>
         <span style="color: white; font-size: 1.125rem; font-weight: 600;">AutoPM-AI</span>
     </div>
     <div style="display: flex; align-items: center; gap: 2rem;">
@@ -401,8 +415,8 @@ if not st.session_state.messages:
         <h1 style="font-size: 3.75rem; font-weight: 700; color: white; font-family: system-ui, sans-serif; line-height: 1.1; letter-spacing: -0.025em; margin: 0;">
             Optimized for Thought<br/>Built for Action
         </h1>
-        <p style="color: #ffffff; font-size: 1.125rem; margin-top: 1.5rem; opacity: 0.95;">
-            Think smarter and act faster. Ask anything—or type "generate spec" for implementation-ready output.
+        <p style="color: rgba(255,255,255,0.6); font-size: 1.125rem; margin-top: 1.5rem;">
+            Think smarter and act faster, from idea to execution in seconds.
         </p>
     </div>
     """, unsafe_allow_html=True)

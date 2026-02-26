@@ -1,5 +1,6 @@
 #!/bin/sh
-# Remove co-author lines from commit messages
+# Remove Cursor co-author and Made-with lines from commit messages
 if [ -f "$1" ]; then
-  sed -i '' '/Co-authored-by:/d' "$1" 2>/dev/null || sed -i '/Co-authored-by:/d' "$1" 2>/dev/null
+  sed -i '' -e '/Co-authored-by: Cursor/d' -e '/Co-authored-by:.*cursoragent/d' -e '/Made-with: Cursor/d' "$1" 2>/dev/null || \
+  sed -i -e '/Co-authored-by: Cursor/d' -e '/Co-authored-by:.*cursoragent/d' -e '/Made-with: Cursor/d' "$1" 2>/dev/null
 fi
