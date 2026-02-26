@@ -56,8 +56,8 @@ This file summarizes all changes made during development.
 - spec_dict_to_markdown(): implementation-ready markdown export
 
 
-7. EXPORT FOR CURSOR
--------------------
+7. EXPORT FOR CODING AGENTS
+---------------------------
 - Download .md button: markdown format for coding agent context
 - Download .json button: structured JSON
 - View spec expander: preview full spec
@@ -137,3 +137,21 @@ FILES NOT MODIFIED (but exist)
 - Replaced with "coding agents", "implementation-ready", "AutoPM-AI" as appropriate
 - Added agents.py, spec_schema.py, CHANGES.txt to repo
 - Pushed to origin/main
+
+
+13. UI/UX IMPROVEMENTS
+----------------------
+- Brightened font colors: main content, chat messages, textarea, expanders all use #ffffff for readability
+- Chat input fixed at bottom of viewport (position: fixed) so it stays visible while scrolling
+- Added padding-bottom to main content so messages are not hidden behind fixed input
+- Help button moved above chat input (bottom: 100px)
+
+
+14. PRIORITY INDICATION IN RECOMMENDATIONS
+-----------------------------------------
+- Analyst: when recommending tasks/plans/features, always include priority (🔴 High / 🟡 Medium / 🟢 Low) with rationale
+- Priority based on: customer feedback strength, product vision alignment, impact vs effort
+- Explicitly call out highest-priority item and why it should be tackled first
+- Spec Writer: added priority_rationale section (customer feedback + product vision)
+- Spec JSON: priority_rationale field, dev_tasks with per-task priority
+- spec_schema: ProductSpec.priority_rationale, dev task priority in markdown export

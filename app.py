@@ -248,9 +248,18 @@ st.markdown("""
         background: rgba(255, 255, 255, 0.1) !important;
     }
     
-    /* Main content text */
-    .main .stMarkdown, .main label { color: rgba(255,255,255,0.95) !important; }
-    .main .stMarkdown h1, .main .stMarkdown h2, .main .stMarkdown h3 { color: #fff !important; }
+    /* Main content text - bright for readability */
+    .main .stMarkdown, .main label, .main p { color: #ffffff !important; }
+    .main .stMarkdown h1, .main .stMarkdown h2, .main .stMarkdown h3, .main .stMarkdown h4 { color: #ffffff !important; }
+    .main .stMarkdown li, .main .stMarkdown span { color: #ffffff !important; }
+    
+    /* Chat messages - ensure bright text */
+    [data-testid="stChatMessage"] .stMarkdown, [data-testid="stChatMessage"] p { color: #ffffff !important; }
+    [data-testid="stChatMessage"] h1, [data-testid="stChatMessage"] h2, [data-testid="stChatMessage"] h3 { color: #ffffff !important; }
+    
+    /* Text area and inputs - bright text */
+    .stTextArea textarea, .stTextInput input { color: #ffffff !important; }
+    .stTextArea textarea::placeholder { color: rgba(255,255,255,0.7) !important; }
     
     /* Recommendations output */
     .glass-recommendations {
@@ -274,13 +283,36 @@ st.markdown("""
         border-radius: 12px;
     }
     
-    /* Expanders */
+    /* Expanders - bright text */
     [data-testid="stExpander"] {
         background: rgba(255, 255, 255, 0.04);
         border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 12px;
         margin-bottom: 0.5rem;
     }
+    [data-testid="stExpander"] .stMarkdown, [data-testid="stExpander"] p { color: #ffffff !important; }
+    
+    /* Chat input fixed at bottom - main area has one form (chat) */
+    .main [data-testid="stForm"],
+    .main form {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        background: rgba(0, 0, 0, 0.85) !important;
+        backdrop-filter: blur(16px);
+        padding: 1rem 2rem 1.5rem !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.12);
+        z-index: 1000;
+        margin: 0 !important;
+    }
+    .main [data-testid="stForm"] textarea,
+    .main form textarea {
+        color: #ffffff !important; background: rgba(255,255,255,0.08) !important;
+    }
+    
+    /* Add bottom padding so content is not hidden behind fixed input */
+    .main .block-container { padding-bottom: 180px !important; }
     
     /* Hide Streamlit branding */
     #MainMenu { visibility: hidden; }
@@ -347,7 +379,7 @@ if not st.session_state.messages:
         <h1 style="font-size: 3.75rem; font-weight: 700; color: white; font-family: system-ui, sans-serif; line-height: 1.1; letter-spacing: -0.025em; margin: 0;">
             Optimized for Thought<br/>Built for Action
         </h1>
-        <p style="color: rgba(255,255,255,0.6); font-size: 1.125rem; margin-top: 1.5rem;">
+        <p style="color: #ffffff; font-size: 1.125rem; margin-top: 1.5rem; opacity: 0.95;">
             Think smarter and act faster. Ask anything—or type "generate spec" for implementation-ready output.
         </p>
     </div>
@@ -433,7 +465,7 @@ if submitted and prompt and prompt.strip():
 # Trusted by section
 st.markdown("""
 <div style="text-align: center; padding: 3rem 0 2rem 0;">
-    <p style="color: rgba(255,255,255,0.4); font-size: 0.875rem; margin-bottom: 1.5rem;">Trusted by</p>
+    <p style="color: rgba(255,255,255,0.85); font-size: 0.875rem; margin-bottom: 1.5rem;">Trusted by</p>
     <div style="display: flex; align-items: center; justify-content: center; gap: 3rem; opacity: 0.4;">
         <span style="color: white; font-size: 1.125rem; font-weight: 600;">Atlassian</span>
         <span style="color: white; font-size: 1.125rem; font-weight: 600;">Notion</span>
@@ -443,9 +475,9 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Help button - bottom right
+# Help button - above chat input
 st.markdown("""
-<div style="position: fixed; bottom: 24px; right: 24px; width: 40px; height: 40px; 
+<div style="position: fixed; bottom: 100px; right: 24px; width: 40px; height: 40px; 
     background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); 
     border-radius: 50%; display: flex; align-items: center; justify-content: center; 
     font-size: 1.25rem; color: rgba(255,255,255,0.7); cursor: pointer; z-index: 9999;">?</div>

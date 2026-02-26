@@ -57,6 +57,7 @@ class ProductSpec:
     data_model: list[dict]
     workflows: list[dict]
     dev_tasks: list[dict]
+    priority_rationale: str | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -64,6 +65,7 @@ class ProductSpec:
             "problem": self.problem,
             "user_story": self.user_story,
             "priority": self.priority,
+            "priority_rationale": self.priority_rationale,
             "acceptance_criteria": self.acceptance_criteria,
             "evidence": self.evidence,
             "ui_changes": self.ui_changes,
@@ -86,8 +88,12 @@ class ProductSpec:
             "## Priority",
             self.priority,
             "",
-            "## Acceptance Criteria",
         ]
+        if self.priority_rationale:
+            lines.extend(["## Priority Rationale", self.priority_rationale, ""])
+        lines.extend([
+            "## Acceptance Criteria",
+        ])
         for ac in self.acceptance_criteria:
             lines.append(f"- {ac}")
         lines.extend(["", "## Evidence (Traceability)"])
@@ -110,7 +116,8 @@ class ProductSpec:
         lines.extend(["", "## Dev Tasks (for coding agent)"])
         for t in self.dev_tasks:
             deps = f" (deps: {t.get('deps', [])})" if t.get("deps") else ""
-            lines.append(f"{t.get('id', 0)}. [{t.get('type', '')}] {t.get('task', '')}{deps}")
+            prio = f" [{t.get('priority', '')}]" if t.get("priority") else ""
+            lines.append(f"{t.get('id', 0)}. [{t.get('type', '')}] {t.get('task', '')}{prio}{deps}")
         return "\n".join(lines)
 
 
@@ -142,5 +149,6 @@ def spec_dict_to_markdown(spec: dict) -> str:
         data_model=spec.get("data_model", []),
         workflows=spec.get("workflows", []),
         dev_tasks=spec.get("dev_tasks", []),
+        priority_rationale=spec.get("priority_rationale"),
     )
     return s.to_markdown()
