@@ -1,0 +1,132 @@
+CHANGES MADE - AutoPM-AI
+========================================================
+
+This file summarizes all changes made during development.
+
+
+1. DEPLOYMENT (React UI + API)
+------------------------------
+- Added Dockerfile: multi-stage build (Node frontend + Python API)
+- Added .dockerignore: node_modules, .venv, .env, etc.
+- Updated api/main.py: serves React frontend from frontend/dist when it exists
+- Updated api/main.py: CORS_ORIGINS env var for production frontend URLs
+- Updated .env.example: added CORS_ORIGINS comment
+- Updated README.md: Docker deployment instructions, React UI run instructions
+
+
+2. API KEY SECURITY
+-------------------
+- Replaced exposed GROQ_API_KEY in .env with placeholder (your_groq_api_key_here)
+- .env is gitignored; key should be rotated if it was ever exposed
+
+
+3. CONVERSATION-BASED STREAMLIT (app.py)
+----------------------------------------
+- Replaced one-shot "Generate" flow with chat interface
+- Uses st.chat_message and st.chat_input
+- Session state: messages array for conversation history
+- File upload optional; can chat first, upload later
+- Hero section only shows when no messages yet
+
+
+4. CONVERSATIONAL AGENT PROMPT
+------------------------------
+- System prompt: direct answers, clarifying questions when vague
+- Asks for docs if analysis requested but none uploaded
+- Matches the ask (prioritization, summary, tradeoffs)
+- Concise, no fluff
+
+
+5. SPEC GENERATION FLOW
+-----------------------
+- Detect triggers: "generate spec", "create spec", "implementation plan", "break down", "dev tasks", "for coding"
+- When detected, uses spec-generation prompt instead of chat
+- Produces structured JSON with: title, problem, user_story, priority, acceptance_criteria, evidence, ui_changes, data_model, workflows, dev_tasks
+
+
+6. SPEC SCHEMA (spec_schema.py) - NEW FILE
+------------------------------------------
+- ProductSpec dataclass and JSON schema
+- Evidence: source, quote, relevance (traceability)
+- UI changes: screen, change, component
+- Data model: entity, change, fields
+- Workflows: name, steps, edge_cases
+- Dev tasks: id, task, type, deps
+- extract_spec_from_response(): parses JSON from ```json block
+- spec_dict_to_markdown(): implementation-ready markdown export
+
+
+7. EXPORT FOR CURSOR
+-------------------
+- Download .md button: markdown format for coding agent context
+- Download .json button: structured JSON
+- View spec expander: preview full spec
+- Shown when last assistant message contains parsed spec
+
+
+8. MULTI-AGENT SYSTEM (agents.py) - NEW FILE
+--------------------------------------------
+Producer agents:
+- Analyst: answers PM questions, recommendations, cites evidence
+- Spec Writer: creates implementation specs with JSON
+
+Reviewer agents (check producer work):
+- Critic: reviews Analyst output (correctness, evidence, completeness, clarity)
+- Spec Critic: reviews Spec Writer output (traceability, completeness, consistency, implementability)
+
+Reviser agents (improve based on critique):
+- Reviser: improves Analyst response from Critic feedback
+- Spec Reviser: improves Spec from Spec Critic feedback
+
+Flow: Producer → Critic → Reviser → Final output
+
+
+9. APP.PY INTEGRATION
+---------------------
+- Imports: spec_schema, agents (orchestrate_chat, orchestrate_spec)
+- Replaced chat_turn with orchestrate_chat (3 agents)
+- Replaced generate_spec with orchestrate_spec (3 agents)
+- Assistant messages store optional "critique" field
+- Expander "Agent review (critic feedback)" shows reviewer feedback
+- Spinner text: "Thinking (3 agents: analyst → critic → reviser)..." or "Generating implementation spec (3 agents)..."
+
+
+10. GIT / DEPLOYMENT
+--------------------
+- Pushed conversation-based Streamlit to GitHub (main)
+- Streamlit Cloud auto-deploys from repo
+- No product/IDE mentions in repo (per user request)
+
+
+FILES CREATED
+-------------
+- spec_schema.py
+- agents.py
+- Dockerfile
+- .dockerignore
+- CHANGES.txt (this file)
+
+
+FILES MODIFIED
+--------------
+- app.py (major: chat UI, spec flow, multi-agent)
+- api/main.py (static serving, CORS, /api/chat - in AutoPM-AI folder)
+- .env.example
+- README.md
+- .env (API key placeholder)
+
+
+FILES NOT MODIFIED (but exist)
+------------------------------
+- AutoPM-AI/frontend/* (React UI - conversation-based, separate from Streamlit)
+- AutoPM-AI/api/main.py (has /api/chat for React frontend)
+- requirements.txt
+- requirements-api.txt
+
+
+11. PUSH TO GITHUB (multi-agent + spec + branding cleanup)
+---------------------------------------------------------
+- Removed all product/IDE mentions from app.py, agents.py, spec_schema.py, CHANGES.txt
+- Replaced with "coding agents", "implementation-ready", "AutoPM-AI" as appropriate
+- Added agents.py, spec_schema.py, CHANGES.txt to repo
+- Pushed to origin/main

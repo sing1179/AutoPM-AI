@@ -1,12 +1,16 @@
 """
 AutoPM AI - Product prioritization assistant
-Upload customer interviews and usage data, get AI-powered recommendations.
+Upload customer interviews and usage data, get AI-powered recommendations and implementation-ready specs.
 """
 
 import streamlit as st
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
+import json
+
+from spec_schema import extract_spec_from_response, spec_dict_to_markdown
+from agents import orchestrate_chat, orchestrate_spec
 
 # Load environment variables
 load_dotenv()
@@ -124,39 +128,16 @@ def get_llm_client() -> OpenAI | None:
     )
 
 
-CONVERSATION_SYSTEM = """You are a sharp, no-nonsense PM assistant. Your job is to give straight answers and move the conversation forward.
-
-RULES:
-1. **Be direct** — Answer what the PM actually asked. No preamble, no fluff.
-2. **Ask clarifying questions when needed** — If the question is vague, ambiguous, or you need context (e.g. "which users?", "what's the timeline?"), ask 1–2 short clarifying questions. Don't guess.
-3. **Use the data when you have it** — If documents are uploaded, cite specific evidence. If not, say so and ask them to upload.
-4. **Match the ask** — If they want prioritization, give priorities. If they want a summary, summarize. If they want tradeoffs, give tradeoffs.
-5. **Keep it concise** — Bullet points over paragraphs. Markdown when helpful.
-6. **Never lecture** — Skip the "As a product manager..." stuff. Just help."""
-
-
-def chat_turn(messages: list[dict], data_context: str | None) -> str:
-    """Call Groq with full conversation history. Returns assistant response."""
-    client = get_llm_client()
-    if not client:
-        raise ValueError("API key required. Add your Groq API key in the sidebar (or set GROQ_API_KEY in .env).")
-
-    system = CONVERSATION_SYSTEM
-    if data_context:
-        system += "\n\n## Available data\nYou have access to the following uploaded documents. Use them when relevant.\n\n" + data_context
-    else:
-        system += "\n\n## Available data\nNone. If the user asks for analysis or recommendations, ask them to upload documents first."
-
-    api_messages = [{"role": "system", "content": system}]
-    for m in messages:
-        api_messages.append({"role": m["role"], "content": m["content"]})
-
-    response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=api_messages,
-        temperature=0.3,
-    )
-    return response.choices[0].message.content
+def wants_spec(prompt: str) -> bool:
+    """Detect if user is asking for an implementation spec."""
+    p = prompt.lower().strip()
+    triggers = [
+        "generate spec", "create spec", "write spec", "spec for",
+        "implementation spec", "implementation plan", "dev spec",
+        "break down", "break this down", "task list", "dev tasks",
+        "for coding", "ready for implementation",
+    ]
+    return any(t in p for t in triggers)
 
 
 # --- UI ---
@@ -351,9 +332,13 @@ with st.sidebar:
         st.success("✓ Ready")
     st.caption("Formats: .txt, .md, .pdf, .docx, .csv")
 
-# Initialize chat messages
+# Initialize chat messages, last spec, last critique
 if "messages" not in st.session_state:
     st.session_state.messages = []
+if "last_spec" not in st.session_state:
+    st.session_state.last_spec = None
+if "last_critique" not in st.session_state:
+    st.session_state.last_critique = None
 
 # Hero - only when no messages yet
 if not st.session_state.messages:
@@ -363,7 +348,7 @@ if not st.session_state.messages:
             Optimized for Thought<br/>Built for Action
         </h1>
         <p style="color: rgba(255,255,255,0.6); font-size: 1.125rem; margin-top: 1.5rem;">
-            Think smarter and act faster. Ask anything—or upload docs for analysis.
+            Think smarter and act faster. Ask anything—or type "generate spec" for implementation-ready output.
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -380,31 +365,59 @@ if uploaded_files:
     st.caption(f"✓ {len(uploaded_files)} file(s) attached to this conversation")
 
 # Display chat history
-for msg in st.session_state.messages:
+for i, msg in enumerate(st.session_state.messages):
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
+        # Show reviewer critique for assistant messages
+        if msg["role"] == "assistant" and msg.get("critique"):
+            with st.expander("🔍 Agent review (critic feedback)"):
+                st.markdown(msg["critique"])
+        # Show export for assistant messages that contain a spec (last one with spec)
+        if msg["role"] == "assistant" and i == len(st.session_state.messages) - 1:
+            spec_dict = extract_spec_from_response(msg["content"])
+            if spec_dict:
+                st.session_state.last_spec = spec_dict
+                st.caption("📋 Implementation-ready spec detected")
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    md = spec_dict_to_markdown(spec_dict)
+                    st.download_button("📥 Download .md", md, file_name="spec.md", mime="text/markdown", key="dl_md")
+                with col2:
+                    st.download_button("📥 Download .json", json.dumps(spec_dict, indent=2), file_name="spec.json", mime="application/json", key="dl_json")
+                with col3:
+                    with st.expander("📄 View spec"):
+                        st.code(md, language="markdown")
 
 # Chat input
-if prompt := st.chat_input("Ask anything—or upload docs for analysis"):
+if prompt := st.chat_input("Ask anything—or type 'generate spec' for implementation-ready output"):
     st.session_state.messages.append({"role": "user", "content": prompt})
+    st.session_state.last_spec = None
 
     with st.chat_message("user"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        data_context = build_context(uploaded_files) if uploaded_files else None
-        conv_for_api = [{"role": m["role"], "content": m["content"]} for m in st.session_state.messages]
+        client = get_llm_client()
+        if not client:
+            st.error("API key required. Add your Groq API key in the sidebar (or set GROQ_API_KEY in .env).")
+        else:
+            data_context = build_context(uploaded_files) if uploaded_files else None
+            conv_for_api = [{"role": m["role"], "content": m["content"]} for m in st.session_state.messages]
 
-        try:
-            with st.spinner("Thinking..."):
-                response = chat_turn(conv_for_api, data_context)
-            st.markdown(response)
-            st.session_state.messages.append({"role": "assistant", "content": response})
-        except ValueError as e:
-            st.error(str(e))
-            st.info("Add your Groq API key in the sidebar (expand → Settings) or set GROQ_API_KEY in .env")
-        except Exception as e:
-            st.error(f"An error occurred: {e}")
+            try:
+                spinner_msg = "Generating implementation spec (3 agents)..." if wants_spec(prompt) else "Thinking (3 agents: analyst → critic → reviser)..."
+                with st.spinner(spinner_msg):
+                    if wants_spec(prompt):
+                        response, critique = orchestrate_spec(client, conv_for_api, data_context)
+                    else:
+                        response, critique = orchestrate_chat(client, conv_for_api, data_context)
+                st.markdown(response)
+                st.session_state.messages.append({"role": "assistant", "content": response, "critique": critique})
+            except ValueError as e:
+                st.error(str(e))
+                st.info("Add your Groq API key in the sidebar (expand → Settings) or set GROQ_API_KEY in .env")
+            except Exception as e:
+                st.error(f"An error occurred: {e}")
 
 # Trusted by section
 st.markdown("""
