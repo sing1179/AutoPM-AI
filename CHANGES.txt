@@ -124,7 +124,14 @@ FILES NOT MODIFIED (but exist)
 - requirements-api.txt
 
 
-11. PUSH TO GITHUB (multi-agent + spec + branding cleanup)
+11. VISIBLE CHAT INPUT (form + text_area)
+-----------------------------------------
+- Replaced st.chat_input with st.form + st.text_area + Send button
+- st.chat_input was not visible on Streamlit Cloud / some layouts
+- Text box is now always visible above the Send button
+
+
+12. PUSH TO GITHUB (multi-agent + spec + branding cleanup)
 ---------------------------------------------------------
 - Removed all product/IDE mentions from app.py, agents.py, spec_schema.py, CHANGES.txt
 - Replaced with "coding agents", "implementation-ready", "AutoPM-AI" as appropriate

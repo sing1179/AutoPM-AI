@@ -388,8 +388,19 @@ for i, msg in enumerate(st.session_state.messages):
                     with st.expander("📄 View spec"):
                         st.code(md, language="markdown")
 
-# Chat input
-if prompt := st.chat_input("Ask anything—or type 'generate spec' for implementation-ready output"):
+# Chat input - visible text box (st.chat_input can be hidden on some layouts)
+with st.form("chat_form", clear_on_submit=True):
+    prompt = st.text_area(
+        "Message",
+        placeholder="Ask anything—or type 'generate spec' for implementation-ready output",
+        label_visibility="collapsed",
+        height=100,
+        key="chat_input",
+    )
+    submitted = st.form_submit_button("Send")
+
+if submitted and prompt and prompt.strip():
+    prompt = prompt.strip()
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.session_state.last_spec = None
 
