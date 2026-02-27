@@ -139,7 +139,7 @@ def wants_spec(prompt: str) -> bool:
 
 
 # --- UI ---
-# Redefined Glass Page Design (from Figma spec)
+# Minimal CSS: background, typography, colors only. Layout via Streamlit primitives.
 
 st.markdown("""
 <style>
@@ -157,107 +157,22 @@ st.markdown("""
     }
     [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] label { color: rgba(255,255,255,0.9) !important; }
     [data-testid="stSidebar"] .stCaption { color: rgba(255,255,255,0.6) !important; }
-    [data-testid="stForm"] {
-        background: rgba(0, 0, 0, 0.4) !important;
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
-        border-radius: 24px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        padding: 2rem !important;
-        margin: 1rem 0 !important;
-    }
-    .stTextArea textarea {
-        background: rgba(255, 255, 255, 0.05) !important;
-        backdrop-filter: blur(4px);
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        color: #fff !important;
-        caret-color: #fff !important;
-        border-radius: 16px !important;
-    }
-    .stTextArea textarea::placeholder { color: rgba(255,255,255,0.4) !important; }
-    .stTextArea textarea:focus {
-        background: rgba(255, 255, 255, 0.1) !important;
-        border-color: rgba(255, 255, 255, 0.2) !important;
-    }
-    .stButton > button {
-        background: rgba(255, 255, 255, 0.1) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        color: #fff !important;
-        border-radius: 12px;
-        font-weight: 500;
-    }
-    .stButton > button:hover {
-        background: rgba(255, 255, 255, 0.2) !important;
-        border-color: rgba(255, 255, 255, 0.2) !important;
-    }
-    div[data-testid="stFileUploader"] {
-        background: rgba(255, 255, 255, 0.05) !important;
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        padding: 1.5rem;
-    }
-    div[data-testid="stFileUploader"] section { background: transparent !important; border: none !important; }
     .main .stMarkdown, .main label, .main p { color: #fff !important; }
     .main .stMarkdown h1, .main .stMarkdown h2, .main .stMarkdown h3, .main .stMarkdown h4 { color: #fff !important; }
     .main .stMarkdown li, .main .stMarkdown span { color: #fff !important; }
-    [data-testid="stChatMessage"] {
-        background: rgba(255, 255, 255, 0.05) !important;
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 16px;
-        padding: 1rem;
-    }
-    [data-testid="stChatMessage"] .stMarkdown, [data-testid="stChatMessage"] p { color: #fff !important; }
-    [data-testid="stAlert"] {
-        background: rgba(255, 255, 255, 0.06) !important;
-        backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-    }
-    [data-testid="stExpander"] {
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 12px;
-        margin-bottom: 0.5rem;
-    }
-    [data-testid="stExpander"] .stMarkdown, [data-testid="stExpander"] p { color: #fff !important; }
     #MainMenu { visibility: hidden; }
     footer { visibility: hidden; }
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown("""
-<style>@keyframes orb-pulse { 0%,100%{opacity:0.8} 50%{opacity:1} }</style>
-<div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-    width: 800px; height: 800px; background: rgba(245, 158, 11, 0.4); border-radius: 50%; 
-    filter: blur(120px); pointer-events: none; z-index: 1; animation: orb-pulse 4s ease-in-out infinite;"></div>
-<div style="position: fixed; bottom: 0; right: 0; width: 600px; height: 600px; 
-    background: rgba(251, 146, 60, 0.3); border-radius: 50%; filter: blur(100px); 
-    pointer-events: none; z-index: 1;"></div>
-""", unsafe_allow_html=True)
-
-st.markdown("""
-<div style="display: flex; align-items: center; justify-content: space-between; padding: 1.5rem 2rem; margin: -1rem -1rem 1rem -1rem;">
-    <div style="display: flex; align-items: center; gap: 12px;">
-        <div style="width: 36px; height: 36px;">
-            <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 36px; height: 36px;">
-                <circle cx="12" cy="16" r="10" fill="black" stroke="white" stroke-width="2"/>
-                <text x="12" y="21" font-size="10" font-weight="bold" fill="white" text-anchor="middle">PM</text>
-                <circle cx="20" cy="16" r="10" fill="black" stroke="white" stroke-width="2"/>
-                <text x="20" y="21" font-size="10" font-weight="bold" fill="white" text-anchor="middle">AI</text>
-            </svg>
-        </div>
-        <span style="color: white; font-size: 1.125rem; font-weight: 600;">AutoPM-AI</span>
-    </div>
-    <div style="display: flex; align-items: center; gap: 2rem;">
-        <span style="color: rgba(255,255,255,0.7); font-size: 0.875rem; cursor: pointer;">Research notes</span>
-        <button style="padding: 0.5rem 1rem; border-radius: 0.5rem; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: white; font-size: 0.875rem; cursor: pointer;">Login</button>
-        <button style="padding: 0.5rem 1rem; border-radius: 0.5rem; background: white; color: black; font-size: 0.875rem; font-weight: 500; cursor: pointer; border: none;">Create account</button>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+# Nav: Streamlit columns instead of raw HTML
+nav = st.container()
+with nav:
+    col_logo, col_spacer, col_actions = st.columns([1, 4, 2])
+    with col_logo:
+        st.markdown("**AutoPM-AI**")
+    with col_actions:
+        st.caption("Research notes · Login · Create account")
 
 with st.sidebar:
     st.markdown("### ⚙️ Settings")
@@ -284,16 +199,10 @@ if "last_critique" not in st.session_state:
     st.session_state.last_critique = None
 
 if not st.session_state.messages:
-    st.markdown("""
-    <div style="text-align: center; padding: 2rem 0 1rem 0;">
-        <h1 style="font-size: 3.75rem; font-weight: 700; color: white; font-family: system-ui, sans-serif; line-height: 1.1; letter-spacing: -0.025em; margin: 0;">
-            Optimized for Thought<br/>Built for Action
-        </h1>
-        <p style="color: rgba(255,255,255,0.6); font-size: 1.125rem; margin-top: 1.5rem;">
-            Think smarter and act faster, from idea to execution in seconds.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+    hero = st.container()
+    with hero:
+        st.markdown("# Optimized for Thought  \n# Built for Action")
+        st.caption("Think smarter and act faster, from idea to execution in seconds.")
 
 for i, msg in enumerate(st.session_state.messages):
     with st.chat_message(msg["role"]):
@@ -317,32 +226,18 @@ for i, msg in enumerate(st.session_state.messages):
                         st.code(md, language="markdown")
 
 if not st.session_state.messages:
-    st.markdown("""
-    <div style="text-align: center; padding: 3rem 0 2rem 0;">
-        <p style="color: rgba(255,255,255,0.4); font-size: 0.875rem; margin-bottom: 1.5rem;">Trusted by</p>
-        <div style="display: flex; align-items: center; justify-content: center; gap: 3rem; opacity: 0.4;">
-            <span style="color: white; font-size: 1.125rem; font-weight: 600;">Atlassian</span>
-            <span style="color: white; font-size: 1.125rem; font-weight: 600;">Notion</span>
-            <span style="color: white; font-size: 1.125rem; font-weight: 600;">Linear</span>
-            <span style="color: white; font-size: 1.125rem; font-weight: 600;">GitHub</span>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    trusted = st.container()
+    with trusted:
+        st.caption("Trusted by")
+        t1, t2, t3, t4 = st.columns(4)
+        with t1: st.markdown("**Atlassian**")
+        with t2: st.markdown("**Notion**")
+        with t3: st.markdown("**Linear**")
+        with t4: st.markdown("**GitHub**")
 
-with st.form("chat_form", clear_on_submit=True):
-    col_logo, col_input = st.columns([0.5, 12])
-    with col_logo:
-        st.markdown("""
-        <div style="padding-top: 1rem;">
-            <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 20px; height: 20px;">
-                <circle cx="12" cy="16" r="10" fill="black" stroke="white" stroke-width="2"/>
-                <text x="12" y="21" font-size="10" font-weight="bold" fill="white" text-anchor="middle">PM</text>
-                <circle cx="20" cy="16" r="10" fill="black" stroke="white" stroke-width="2"/>
-                <text x="20" y="21" font-size="10" font-weight="bold" fill="white" text-anchor="middle">AI</text>
-            </svg>
-        </div>
-        """, unsafe_allow_html=True)
-    with col_input:
+input_section = st.container()
+with input_section:
+    with st.form("chat_form", clear_on_submit=True):
         prompt = st.text_area(
             "Message",
             placeholder="Ask for anything or use a command",
@@ -350,27 +245,19 @@ with st.form("chat_form", clear_on_submit=True):
             height=100,
             key="chat_input",
         )
-    submitted = st.form_submit_button("Generate")
+        submitted = st.form_submit_button("Generate")
 
-col_upload, col_feedback, _ = st.columns([2, 1, 3])
-with col_upload:
-    uploaded_files = st.file_uploader(
-        "Upload documents",
-        type=None,
-        accept_multiple_files=True,
-        help="Interviews (.txt, .md, .pdf, .docx) • Usage data (.csv)",
-        key="file_upload",
-    )
-with col_feedback:
-    st.markdown("""
-    <div style="padding-top: 0.5rem;">
-        <button style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; 
-            border-radius: 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
-            color: rgba(255,255,255,0.7); font-size: 0.875rem; cursor: pointer;">
-            <span style="font-size: 1rem;">💬</span> Feedback
-        </button>
-    </div>
-    """, unsafe_allow_html=True)
+    col_upload, col_feedback, _ = st.columns([2, 1, 3])
+    with col_upload:
+        uploaded_files = st.file_uploader(
+            "Upload documents",
+            type=None,
+            accept_multiple_files=True,
+            help="Interviews (.txt, .md, .pdf, .docx) • Usage data (.csv)",
+            key="file_upload",
+        )
+    with col_feedback:
+        st.button("💬 Feedback", key="feedback_btn")
 
 if submitted and prompt and prompt.strip():
     prompt = prompt.strip()
