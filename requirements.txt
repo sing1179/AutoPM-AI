@@ -5,3 +5,4 @@ pandas
 pypdf
 python-docx
 markdown
+ddgs

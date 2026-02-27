@@ -138,6 +138,62 @@ def wants_spec(prompt: str) -> bool:
     return any(t in p for t in triggers)
 
 
+def wants_web_search(prompt: str) -> bool:
+    """Detect if user is asking to search the web."""
+    p = prompt.lower().strip()
+    triggers = [
+        "search the web", "search for", "search online", "look up",
+        "look it up", "find on the web", "search web", "web search",
+        "google it", "search internet",
+    ]
+    return any(t in p for t in triggers)
+
+
+def extract_search_query(prompt: str) -> str:
+    """Extract search query from a message that asks to search."""
+    p = prompt.strip()
+    lower = p.lower()
+    prefixes = [
+        "search the web for ",
+        "search the web for: ",
+        "search the web ",
+        "search for ",
+        "search for: ",
+        "search online for ",
+        "search ",
+        "look up ",
+        "look up: ",
+        "find on the web ",
+        "search web for ",
+        "web search for ",
+        "google ",
+    ]
+    for prefix in prefixes:
+        if lower.startswith(prefix):
+            return p[len(prefix) :].strip()
+    # Fallback: use full message as query
+    return p
+
+
+def search_web(query: str, max_results: int = 5) -> str:
+    """Run web search and return formatted results."""
+    try:
+        from ddgs import DDGS
+
+        results = DDGS().text(query, max_results=max_results) or []
+        if not results:
+            return "[No web results found]"
+        parts = []
+        for i, r in enumerate(results, 1):
+            title = r.get("title", "")
+            body = r.get("body", "")
+            url = r.get("href", "")
+            parts.append(f"{i}. **{title}**\n   {body}\n   Source: {url}")
+        return "\n\n".join(parts)
+    except Exception as e:
+        return f"[Web search failed: {e}]"
+
+
 # --- UI ---
 # Minimal CSS: background, typography, colors only. Layout via Streamlit primitives.
 
@@ -273,15 +329,20 @@ if submitted and prompt and prompt.strip():
             st.error("API key required. Add your Groq API key in the sidebar (or set GROQ_API_KEY in .env).")
         else:
             data_context = build_context(uploaded_files) if uploaded_files else None
+            web_search_context = None
+            if wants_web_search(prompt):
+                query = extract_search_query(prompt)
+                with st.spinner("Searching the web..."):
+                    web_search_context = search_web(query)
             conv_for_api = [{"role": m["role"], "content": m["content"]} for m in st.session_state.messages]
 
             try:
                 spinner_msg = "Generating implementation spec (3 agents)..." if wants_spec(prompt) else "Thinking (3 agents: analyst → critic → reviser)..."
                 with st.spinner(spinner_msg):
                     if wants_spec(prompt):
-                        response, critique = orchestrate_spec(client, conv_for_api, data_context)
+                        response, critique = orchestrate_spec(client, conv_for_api, data_context, web_search_context)
                     else:
-                        response, critique = orchestrate_chat(client, conv_for_api, data_context)
+                        response, critique = orchestrate_chat(client, conv_for_api, data_context, web_search_context)
                 st.markdown(response)
                 st.session_state.messages.append({"role": "assistant", "content": response, "critique": critique})
             except ValueError as e:

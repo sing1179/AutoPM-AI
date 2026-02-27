@@ -15,6 +15,7 @@ RULES:
 5. **Keep it concise** — Bullet points over paragraphs. Markdown when helpful.
 6. **Never lecture** — Skip the "As a product manager..." stuff. Just help.
 7. **Language** — Always respond in the language of the most recent user message (ignore earlier messages). If that message is in English, respond in English. If it is in another language, respond in that language AND append "--- English translation ---" followed by the full response in plain English.
+8. **Web search** — When the user asks to search the web, web search results will be provided in "## Web search results". Use them to answer. Cite sources when you use information from the search results.
 
 PRIORITY INDICATION (when recommending tasks, plans, or features):
 - **Always include priority** when the user asks for recommendations, plans, task lists, or what to build next.
@@ -58,6 +59,7 @@ Based on the conversation and uploaded data, produce a structured product spec. 
 
 RULES:
 - **Language** — Produce the spec in the language of the most recent user message (ignore earlier messages). If that message is in English, produce in English. If it is in another language, produce in that language AND append "--- English translation ---" followed by the full spec in plain English.
+- **Web search** — When the user asks to search the web, web search results will be provided. Use them in your spec and cite sources in the evidence section.
 - **priority** and **priority_rationale** must be driven by customer feedback and product vision. If data is sparse, state assumptions.
 - For multiple dev_tasks, assign each a priority and order by: highest customer impact first, then product vision alignment, then dependencies.
 - Cite specific evidence from uploaded files. Include filename and exact quotes.
@@ -125,13 +127,15 @@ def run_agent(client, system: str, user_content: str, temperature: float = 0.3) 
     return response.choices[0].message.content
 
 
-def orchestrate_chat(client, messages: list[dict], data_context: str | None) -> tuple[str, str]:
+def orchestrate_chat(client, messages: list[dict], data_context: str | None, web_search_context: str | None = None) -> tuple[str, str]:
     """Multi-agent chat: Analyst → Critic → Reviser. Returns (final_response, critique)."""
     system = ANALYST_SYSTEM
     if data_context:
         system += "\n\n## Available data\n" + data_context
     else:
         system += "\n\n## Available data\nNone. If the user asks for analysis, ask them to upload documents."
+    if web_search_context:
+        system += "\n\n## Web search results (user asked to search)\n" + web_search_context
 
     conv_text = "\n\n".join(f"**{m['role']}:** {m['content']}" for m in messages)
     analyst_input = f"## Conversation\n\n{conv_text}\n\nRespond to the latest user message."
@@ -145,13 +149,15 @@ def orchestrate_chat(client, messages: list[dict], data_context: str | None) -> 
     return final, critique
 
 
-def orchestrate_spec(client, messages: list[dict], data_context: str | None) -> tuple[str, str]:
+def orchestrate_spec(client, messages: list[dict], data_context: str | None, web_search_context: str | None = None) -> tuple[str, str]:
     """Multi-agent spec: Spec Writer → Spec Critic → Spec Reviser. Returns (final_spec, critique)."""
     system = SPEC_WRITER_SYSTEM
     if data_context:
         system += "\n\n## Available data\n" + data_context
     else:
         system += "\n\n## Available data\nNone. Use the conversation context to infer the feature."
+    if web_search_context:
+        system += "\n\n## Web search results (user asked to search)\n" + web_search_context
 
     conv_text = "\n\n".join(f"**{m['role']}:** {m['content']}" for m in messages)
     writer_input = f"## Conversation\n\n{conv_text}\n\nProduce the implementation spec."
