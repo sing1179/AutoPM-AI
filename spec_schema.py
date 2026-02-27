@@ -41,7 +41,7 @@ class Workflow:
 class DevTask:
     id: int
     task: str
-    type: str  # backend, frontend, migration, config, etc.
+    type: str
     deps: list[int] = field(default_factory=list)
 
 
@@ -91,9 +91,7 @@ class ProductSpec:
         ]
         if self.priority_rationale:
             lines.extend(["## Priority Rationale", self.priority_rationale, ""])
-        lines.extend([
-            "## Acceptance Criteria",
-        ])
+        lines.extend(["## Acceptance Criteria"])
         for ac in self.acceptance_criteria:
             lines.append(f"- {ac}")
         lines.extend(["", "## Evidence (Traceability)"])
@@ -129,7 +127,6 @@ def extract_spec_from_response(response: str) -> dict | None:
             return json.loads(match.group(1).strip())
         except json.JSONDecodeError:
             pass
-    # Try parsing whole response as JSON
     try:
         return json.loads(response.strip())
     except json.JSONDecodeError:

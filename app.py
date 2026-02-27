@@ -107,9 +107,7 @@ def build_context(uploaded_files: list) -> str:
 
 def get_api_key() -> str | None:
     """Get Groq API key from env, session state, or None if missing."""
-    # 1. Environment variable (local dev, Streamlit Cloud secrets)
     api_key = os.getenv("GROQ_API_KEY")
-    # 2. Session state (deployed app - user pastes key in sidebar)
     if not api_key and "groq_api_key" in st.session_state and st.session_state.groq_api_key:
         api_key = st.session_state.groq_api_key
     if not api_key or api_key.strip() == "" or "your_groq_api_key" in api_key.lower():
@@ -141,56 +139,25 @@ def wants_spec(prompt: str) -> bool:
 
 
 # --- UI ---
-# Redefined Glass Page Design: black bg, dotted grid, amber/orange orbs, glass card
+# Redefined Glass Page Design (from Figma spec)
 
 st.markdown("""
 <style>
-    /* Base: black background with dotted grid (Redefined: rgba 0.1) */
-    .stApp {
-        background: #000000 !important;
-    }
-    
+    .stApp { background: #000000 !important; }
     .stApp::before {
-        content: '';
-        position: fixed;
-        inset: 0;
+        content: ''; position: fixed; inset: 0;
         background-image: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
-        background-size: 40px 40px;
-        pointer-events: none;
-        z-index: 0;
+        background-size: 40px 40px; pointer-events: none; z-index: 0;
     }
-    
-    /* Glowing orbs - use injected divs (see HTML below) */
-    
-    /* Ensure content is above orbs */
-    .main .block-container {
-        position: relative;
-        z-index: 10;
-    }
-    
-    /* Glass sidebar */
+    .main .block-container { position: relative; z-index: 10; max-width: 896px; padding: 1rem 2rem 2rem !important; }
     [data-testid="stSidebar"] {
         background: rgba(0, 0, 0, 0.6) !important;
         backdrop-filter: blur(20px);
         border-right: 1px solid rgba(255, 255, 255, 0.08);
     }
-    
     [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] label { color: rgba(255,255,255,0.9) !important; }
     [data-testid="stSidebar"] .stCaption { color: rgba(255,255,255,0.6) !important; }
-    
-    /* Main glass card - Redefined: rounded-3xl bg-black/40 backdrop-blur-xl border-white/10 */
-    .figma-glass-card {
-        background: rgba(0, 0, 0, 0.4);
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
-        border-radius: 24px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        padding: 2rem;
-        margin: 1rem 0;
-    }
-    
-    #main-glass-card ~ div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:nth-child(2) {
+    [data-testid="stForm"] {
         background: rgba(0, 0, 0, 0.4) !important;
         backdrop-filter: blur(24px);
         -webkit-backdrop-filter: blur(24px);
@@ -198,10 +165,32 @@ st.markdown("""
         border: 1px solid rgba(255, 255, 255, 0.1);
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         padding: 2rem !important;
+        margin: 1rem 0 !important;
     }
-    
-    
-    /* File uploader - Redefined: bg-white/5 border-white/10 */
+    .stTextArea textarea {
+        background: rgba(255, 255, 255, 0.05) !important;
+        backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: #fff !important;
+        caret-color: #fff !important;
+        border-radius: 16px !important;
+    }
+    .stTextArea textarea::placeholder { color: rgba(255,255,255,0.4) !important; }
+    .stTextArea textarea:focus {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border-color: rgba(255, 255, 255, 0.2) !important;
+    }
+    .stButton > button {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: #fff !important;
+        border-radius: 12px;
+        font-weight: 500;
+    }
+    .stButton > button:hover {
+        background: rgba(255, 255, 255, 0.2) !important;
+        border-color: rgba(255, 255, 255, 0.2) !important;
+    }
     div[data-testid="stFileUploader"] {
         background: rgba(255, 255, 255, 0.05) !important;
         backdrop-filter: blur(12px);
@@ -209,163 +198,50 @@ st.markdown("""
         border-radius: 12px;
         padding: 1.5rem;
     }
-    
     div[data-testid="stFileUploader"] section { background: transparent !important; border: none !important; }
-    
-    /* Text input - dark glass */
-    .stTextInput input {
+    .main .stMarkdown, .main label, .main p { color: #fff !important; }
+    .main .stMarkdown h1, .main .stMarkdown h2, .main .stMarkdown h3, .main .stMarkdown h4 { color: #fff !important; }
+    .main .stMarkdown li, .main .stMarkdown span { color: #fff !important; }
+    [data-testid="stChatMessage"] {
         background: rgba(255, 255, 255, 0.05) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        color: #fff !important;
-        border-radius: 12px;
-    }
-    
-    .stTextInput input::placeholder { color: rgba(255,255,255,0.4); }
-    
-    /* Primary button - Generate style */
-    .stButton > button[kind="primary"] {
-        background: rgba(255, 255, 255, 0.1) !important;
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        color: #fff !important;
-        font-weight: 500;
-        border-radius: 0.5rem;
-    }
-    
-    .stButton > button[kind="primary"]:hover {
-        background: rgba(255, 255, 255, 0.15) !important;
-        border-color: rgba(255, 255, 255, 0.25);
-    }
-    
-    /* Secondary buttons - Redefined: bg-white/5 border-white/10, hover:bg-white/10 */
-    .stButton > button:not([kind="primary"]) {
-        background: rgba(255, 255, 255, 0.05) !important;
+        backdrop-filter: blur(12px);
         border: 1px solid rgba(255, 255, 255, 0.1);
-        color: rgba(255, 255, 255, 0.8) !important;
-        border-radius: 0.5rem;
+        border-radius: 16px;
+        padding: 1rem;
     }
-    
-    .stButton > button:hover:not([kind="primary"]) {
-        background: rgba(255, 255, 255, 0.1) !important;
-        color: #ffffff !important;
-    }
-    
-    /* Main content text - bright for readability */
-    .main .stMarkdown, .main label, .main p { color: #ffffff !important; }
-    .main .stMarkdown h1, .main .stMarkdown h2, .main .stMarkdown h3, .main .stMarkdown h4 { color: #ffffff !important; }
-    .main .stMarkdown li, .main .stMarkdown span { color: #ffffff !important; }
-    
-    /* Chat messages - ensure bright text */
-    [data-testid="stChatMessage"] .stMarkdown, [data-testid="stChatMessage"] p { color: #ffffff !important; }
-    [data-testid="stChatMessage"] h1, [data-testid="stChatMessage"] h2, [data-testid="stChatMessage"] h3 { color: #ffffff !important; }
-    
-    /* Text area and inputs - bright text */
-    .stTextArea textarea, .stTextInput input { color: #ffffff !important; }
-    .stTextArea textarea::placeholder { color: rgba(255,255,255,0.7) !important; }
-    
-    /* Recommendations output */
-    .glass-recommendations {
-        background: rgba(0, 0, 0, 0.4);
-        backdrop-filter: blur(24px);
-        border-radius: 20px;
-        padding: 2rem;
-        margin-top: 1.5rem;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .glass-recommendations h3 { color: #fff !important; margin: 0 0 1rem 0; }
-    .glass-recommendations .rec-content { color: rgba(255,255,255,0.9); line-height: 1.6; }
-    .glass-recommendations .rec-content h1, .glass-recommendations .rec-content h2, .glass-recommendations .rec-content h3 { color: #fff !important; }
-    
-    /* Alerts */
+    [data-testid="stChatMessage"] .stMarkdown, [data-testid="stChatMessage"] p { color: #fff !important; }
     [data-testid="stAlert"] {
         background: rgba(255, 255, 255, 0.06) !important;
         backdrop-filter: blur(8px);
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 12px;
     }
-    
-    /* Expanders - bright text */
     [data-testid="stExpander"] {
         background: rgba(255, 255, 255, 0.04);
         border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 12px;
         margin-bottom: 0.5rem;
     }
-    [data-testid="stExpander"] .stMarkdown, [data-testid="stExpander"] p { color: #ffffff !important; }
-    
-    /* Chat input - Redefined glass: fixed at bottom, bg-black/40 backdrop-blur-xl */
-    #chat-form-anchor ~ div [data-testid="stForm"],
-    #chat-form-anchor ~ div form,
-    .main [data-testid="stForm"]:last-of-type,
-    .main form:last-of-type {
-        position: fixed !important;
-        bottom: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        background: rgba(0, 0, 0, 0.4) !important;
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
-        padding: 1rem 2rem 1.5rem !important;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-        z-index: 1000;
-        margin: 0 !important;
-    }
-    /* Prompt box - Figma RecommendationInput: rounded-2xl bg-white/5 backdrop-blur-sm border-white/10 */
-    .main [data-testid="stForm"] textarea,
-    .main form textarea {
-        background: rgba(255, 255, 255, 0.05) !important;
-        backdrop-filter: blur(4px);
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        color: #ffffff !important;
-        caret-color: #ffffff !important;
-        border-radius: 16px !important;
-    }
-    .main [data-testid="stForm"] textarea::placeholder,
-    .main form textarea::placeholder {
-        color: rgba(255, 255, 255, 0.4) !important;
-    }
-    .main [data-testid="stForm"] textarea:focus,
-    .main form textarea:focus {
-        background: rgba(255, 255, 255, 0.1) !important;
-        border-color: rgba(255, 255, 255, 0.2) !important;
-    }
-    /* Send button - Redefined: bg-white/10 border-white/10 */
-    .main [data-testid="stForm"] button,
-    .main form button[type="submit"] {
-        background: rgba(255, 255, 255, 0.1) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        color: #ffffff !important;
-    }
-    .main [data-testid="stForm"] button:hover,
-    .main form button[type="submit"]:hover {
-        background: rgba(255, 255, 255, 0.2) !important;
-    }
-    
-    /* Add bottom padding so content is not hidden behind fixed card */
-    .main .block-container { padding-bottom: 280px !important; }
-    
-    /* Hide Streamlit branding */
+    [data-testid="stExpander"] .stMarkdown, [data-testid="stExpander"] p { color: #fff !important; }
     #MainMenu { visibility: hidden; }
     footer { visibility: hidden; }
 </style>
 """, unsafe_allow_html=True)
 
-# Glowing orbs - Redefined: amber-500/40 center, orange-400/30 bottom-right
 st.markdown("""
 <style>@keyframes orb-pulse { 0%,100%{opacity:0.8} 50%{opacity:1} }</style>
 <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
     width: 800px; height: 800px; background: rgba(245, 158, 11, 0.4); border-radius: 50%; 
-    filter: blur(120px); pointer-events: none; z-index: 0; animation: orb-pulse 4s ease-in-out infinite;"></div>
+    filter: blur(120px); pointer-events: none; z-index: 1; animation: orb-pulse 4s ease-in-out infinite;"></div>
 <div style="position: fixed; bottom: 0; right: 0; width: 600px; height: 600px; 
     background: rgba(251, 146, 60, 0.3); border-radius: 50%; filter: blur(100px); 
-    pointer-events: none; z-index: 0;"></div>
+    pointer-events: none; z-index: 1;"></div>
 """, unsafe_allow_html=True)
 
-# Nav bar - Redefined: Logo (PM+AI circles) + AutoPM-AI
 st.markdown("""
 <div style="display: flex; align-items: center; justify-content: space-between; padding: 1.5rem 2rem; margin: -1rem -1rem 1rem -1rem;">
     <div style="display: flex; align-items: center; gap: 12px;">
-        <div style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
+        <div style="width: 36px; height: 36px;">
             <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 36px; height: 36px;">
                 <circle cx="12" cy="16" r="10" fill="black" stroke="white" stroke-width="2"/>
                 <text x="12" y="21" font-size="10" font-weight="bold" fill="white" text-anchor="middle">PM</text>
@@ -383,7 +259,6 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Sidebar - API key (collapsed by default, user can expand)
 with st.sidebar:
     st.markdown("### ⚙️ Settings")
     st.caption("API key required for AI recommendations.")
@@ -401,7 +276,6 @@ with st.sidebar:
         st.success("✓ Ready")
     st.caption("Formats: .txt, .md, .pdf, .docx, .csv")
 
-# Initialize chat messages, last spec, last critique
 if "messages" not in st.session_state:
     st.session_state.messages = []
 if "last_spec" not in st.session_state:
@@ -409,7 +283,6 @@ if "last_spec" not in st.session_state:
 if "last_critique" not in st.session_state:
     st.session_state.last_critique = None
 
-# Hero - only when no messages yet (Figma: hidden when interacting)
 if not st.session_state.messages:
     st.markdown("""
     <div style="text-align: center; padding: 2rem 0 1rem 0;">
@@ -422,15 +295,12 @@ if not st.session_state.messages:
     </div>
     """, unsafe_allow_html=True)
 
-# Display chat history
 for i, msg in enumerate(st.session_state.messages):
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
-        # Show reviewer critique for assistant messages
         if msg["role"] == "assistant" and msg.get("critique"):
             with st.expander("🔍 Agent review (critic feedback)"):
                 st.markdown(msg["critique"])
-        # Show export for assistant messages that contain a spec (last one with spec)
         if msg["role"] == "assistant" and i == len(st.session_state.messages) - 1:
             spec_dict = extract_spec_from_response(msg["content"])
             if spec_dict:
@@ -446,7 +316,6 @@ for i, msg in enumerate(st.session_state.messages):
                     with st.expander("📄 View spec"):
                         st.code(md, language="markdown")
 
-# Trusted by - Figma: hidden when interacting (has messages)
 if not st.session_state.messages:
     st.markdown("""
     <div style="text-align: center; padding: 3rem 0 2rem 0;">
@@ -460,10 +329,6 @@ if not st.session_state.messages:
     </div>
     """, unsafe_allow_html=True)
 
-# Glass card - Figma: input first, then Upload + Feedback on same line
-st.markdown('<div id="chat-form-anchor"></div>', unsafe_allow_html=True)
-
-# RecommendationInput: Logo + textarea + Generate (Figma exact)
 with st.form("chat_form", clear_on_submit=True):
     col_logo, col_input = st.columns([0.5, 12])
     with col_logo:
@@ -487,7 +352,6 @@ with st.form("chat_form", clear_on_submit=True):
         )
     submitted = st.form_submit_button("Generate")
 
-# Upload + Feedback on same line (Figma: below input, in glass card)
 col_upload, col_feedback, _ = st.columns([2, 1, 3])
 with col_upload:
     uploaded_files = st.file_uploader(
@@ -502,9 +366,7 @@ with col_feedback:
     <div style="padding-top: 0.5rem;">
         <button style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; 
             border-radius: 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
-            color: rgba(255,255,255,0.7); font-size: 0.875rem; cursor: pointer; 
-            transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" 
-            onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.color='rgba(255,255,255,0.7)';">
+            color: rgba(255,255,255,0.7); font-size: 0.875rem; cursor: pointer;">
             <span style="font-size: 1rem;">💬</span> Feedback
         </button>
     </div>
@@ -540,11 +402,3 @@ if submitted and prompt and prompt.strip():
                 st.info("Add your Groq API key in the sidebar (expand → Settings) or set GROQ_API_KEY in .env")
             except Exception as e:
                 st.error(f"An error occurred: {e}")
-
-# Help button - above chat input
-st.markdown("""
-<div style="position: fixed; bottom: 100px; right: 24px; width: 40px; height: 40px; 
-    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); 
-    border-radius: 50%; display: flex; align-items: center; justify-content: center; 
-    font-size: 1.25rem; color: rgba(255,255,255,0.7); cursor: pointer; z-index: 9999;">?</div>
-""", unsafe_allow_html=True)

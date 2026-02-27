@@ -3,8 +3,6 @@ Multi-agent system: producers + reviewers.
 Producer agents create output; reviewer agents check and improve it.
 """
 
-from typing import Callable
-
 # --- Producer agents ---
 
 ANALYST_SYSTEM = """You are a sharp, no-nonsense PM analyst. Your job is to give straight answers and move the conversation forward.
@@ -67,8 +65,6 @@ RULES:
 - Dev tasks: ordered for implementation, use deps for task order
 - Be concrete. A coding agent should be able to implement from this."""
 
-# --- Reviewer agents (check producer work) ---
-
 CRITIC_SYSTEM = """You are a senior PM reviewer. Your job is to critique another agent's response.
 
 For the given ORIGINAL RESPONSE, provide a brief critique (3-5 bullet points):
@@ -93,8 +89,6 @@ For the given SPEC (markdown + JSON), provide a brief critique (3-5 bullet point
 
 Format as markdown. Be specific. If the spec is solid, say so briefly."""
 
-# --- Reviser agents (improve based on critique) ---
-
 REVISER_SYSTEM = """You are a PM who improves work based on feedback.
 
 You have:
@@ -112,12 +106,7 @@ You have:
 Produce an IMPROVED SPEC that addresses the critique. Keep the same JSON structure. Fix evidence, completeness, consistency, or implementability issues. Output the full improved spec (summary + ```json block)."""
 
 
-def run_agent(
-    client,
-    system: str,
-    user_content: str,
-    temperature: float = 0.3,
-) -> str:
+def run_agent(client, system: str, user_content: str, temperature: float = 0.3) -> str:
     """Run a single agent. Returns its response."""
     response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
@@ -130,48 +119,28 @@ def run_agent(
     return response.choices[0].message.content
 
 
-def orchestrate_chat(
-    client,
-    messages: list[dict],
-    data_context: str | None,
-) -> tuple[str, str]:
-    """
-    Multi-agent chat: Analyst → Critic → Reviser.
-    Returns (final_response, critique).
-    """
+def orchestrate_chat(client, messages: list[dict], data_context: str | None) -> tuple[str, str]:
+    """Multi-agent chat: Analyst → Critic → Reviser. Returns (final_response, critique)."""
     system = ANALYST_SYSTEM
     if data_context:
         system += "\n\n## Available data\n" + data_context
     else:
         system += "\n\n## Available data\nNone. If the user asks for analysis, ask them to upload documents."
 
-    # Build conversation for analyst
     conv_text = "\n\n".join(f"**{m['role']}:** {m['content']}" for m in messages)
     analyst_input = f"## Conversation\n\n{conv_text}\n\nRespond to the latest user message."
 
-    # 1. Analyst produces response
     original = run_agent(client, system, analyst_input, temperature=0.3)
-
-    # 2. Critic reviews
     critic_input = f"## Original response\n\n{original}\n\n## Your critique"
     critique = run_agent(client, CRITIC_SYSTEM, critic_input, temperature=0.2)
-
-    # 3. Reviser improves (only if critic found issues worth fixing)
     reviser_input = f"## Original response\n\n{original}\n\n## Critique\n\n{critique}\n\n## Produce improved response"
     final = run_agent(client, REVISER_SYSTEM, reviser_input, temperature=0.2)
 
     return final, critique
 
 
-def orchestrate_spec(
-    client,
-    messages: list[dict],
-    data_context: str | None,
-) -> tuple[str, str]:
-    """
-    Multi-agent spec: Spec Writer → Spec Critic → Spec Reviser.
-    Returns (final_spec, critique).
-    """
+def orchestrate_spec(client, messages: list[dict], data_context: str | None) -> tuple[str, str]:
+    """Multi-agent spec: Spec Writer → Spec Critic → Spec Reviser. Returns (final_spec, critique)."""
     system = SPEC_WRITER_SYSTEM
     if data_context:
         system += "\n\n## Available data\n" + data_context
@@ -181,14 +150,9 @@ def orchestrate_spec(
     conv_text = "\n\n".join(f"**{m['role']}:** {m['content']}" for m in messages)
     writer_input = f"## Conversation\n\n{conv_text}\n\nProduce the implementation spec."
 
-    # 1. Spec Writer produces spec
     original = run_agent(client, system, writer_input, temperature=0.2)
-
-    # 2. Spec Critic reviews
     critic_input = f"## Original spec\n\n{original}\n\n## Your critique"
     critique = run_agent(client, SPEC_CRITIC_SYSTEM, critic_input, temperature=0.2)
-
-    # 3. Spec Reviser improves
     reviser_input = f"## Original spec\n\n{original}\n\n## Critique\n\n{critique}\n\n## Produce improved spec"
     final = run_agent(client, SPEC_REVISER_SYSTEM, reviser_input, temperature=0.2)
 
