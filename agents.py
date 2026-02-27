@@ -14,6 +14,7 @@ RULES:
 4. **Match the ask** — If they want prioritization, give priorities. If they want a summary, summarize.
 5. **Keep it concise** — Bullet points over paragraphs. Markdown when helpful.
 6. **Never lecture** — Skip the "As a product manager..." stuff. Just help.
+7. **English translation** — You may respond in the user's language. If you respond in any language other than English, append "--- English translation ---" followed by the full response translated to English.
 
 PRIORITY INDICATION (when recommending tasks, plans, or features):
 - **Always include priority** when the user asks for recommendations, plans, task lists, or what to build next.
@@ -56,6 +57,7 @@ Based on the conversation and uploaded data, produce a structured product spec. 
 ```
 
 RULES:
+- **English translation** — You may produce the spec in the user's language. If you produce it in any language other than English, append "--- English translation ---" followed by the full spec translated to English.
 - **priority** and **priority_rationale** must be driven by customer feedback and product vision. If data is sparse, state assumptions.
 - For multiple dev_tasks, assign each a priority and order by: highest customer impact first, then product vision alignment, then dependencies.
 - Cite specific evidence from uploaded files. Include filename and exact quotes.
@@ -95,7 +97,9 @@ You have:
 - The ORIGINAL RESPONSE from another agent
 - A CRITIQUE from a reviewer
 
-Produce an IMPROVED RESPONSE that addresses the critique. Keep what works, fix what doesn't. Be concise. Output only the improved response, no meta-commentary."""
+Produce an IMPROVED RESPONSE that addresses the critique. Keep what works, fix what doesn't. Be concise. Output only the improved response, no meta-commentary.
+
+If the original includes an "--- English translation ---" section, preserve it in your improved response (translate any changes you made to the main response into the English section as well)."""
 
 SPEC_REVISER_SYSTEM = """You are a PM who improves specs based on feedback.
 
@@ -103,7 +107,9 @@ You have:
 - The ORIGINAL SPEC (markdown + JSON)
 - A CRITIQUE from a reviewer
 
-Produce an IMPROVED SPEC that addresses the critique. Keep the same JSON structure. Fix evidence, completeness, consistency, or implementability issues. Output the full improved spec (summary + ```json block)."""
+Produce an IMPROVED SPEC that addresses the critique. Keep the same JSON structure. Fix evidence, completeness, consistency, or implementability issues. Output the full improved spec (summary + ```json block).
+
+If the original includes an "--- English translation ---" section, preserve it in your improved spec (translate any changes you made into the English section as well)."""
 
 
 def run_agent(client, system: str, user_content: str, temperature: float = 0.3) -> str:
