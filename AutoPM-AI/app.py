@@ -141,21 +141,21 @@ def wants_spec(prompt: str) -> bool:
 
 
 # --- UI ---
-# Streamlit-friendly dark theme: no fixed positioning, better contrast, simpler layout
+# Redefined Glass Page Design (from Figma spec)
 
 st.markdown("""
 <style>
-    /* Base: dark background */
+    /* Base: black background */
     .stApp {
-        background: #0f0f0f !important;
+        background: #000000 !important;
     }
     
-    /* Subtle grid - lighter so content stays readable */
+    /* Dotted grid overlay */
     .stApp::before {
         content: '';
         position: fixed;
         inset: 0;
-        background-image: radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
+        background-image: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
         background-size: 40px 40px;
         pointer-events: none;
         z-index: 0;
@@ -164,101 +164,116 @@ st.markdown("""
     .main .block-container {
         position: relative;
         z-index: 10;
-        max-width: 900px;
+        max-width: 896px;
         padding: 1rem 2rem 2rem !important;
     }
     
-    /* Sidebar */
+    /* Sidebar - glass */
     [data-testid="stSidebar"] {
-        background: rgba(20, 20, 20, 0.95) !important;
-        border-right: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(0, 0, 0, 0.6) !important;
+        backdrop-filter: blur(20px);
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
     }
-    [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] label { color: #e5e5e5 !important; }
-    [data-testid="stSidebar"] .stCaption { color: #a3a3a3 !important; }
+    [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] label { color: rgba(255,255,255,0.9) !important; }
+    [data-testid="stSidebar"] .stCaption { color: rgba(255,255,255,0.6) !important; }
     
-    /* File uploader - visible card */
-    div[data-testid="stFileUploader"] {
-        background: rgba(255, 255, 255, 0.08) !important;
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: 12px;
-        padding: 1rem 1.5rem;
+    /* Main glass card - rounded-3xl, bg-black/40, backdrop-blur-xl */
+    [data-testid="stForm"] {
+        background: rgba(0, 0, 0, 0.4) !important;
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        padding: 2rem !important;
+        margin: 1rem 0 !important;
     }
-    div[data-testid="stFileUploader"] section { background: transparent !important; border: none !important; }
     
-    /* Text inputs - higher contrast */
-    .stTextInput input {
+    /* Textarea - rounded-2xl, bg-white/5, backdrop-blur-sm */
+    .stTextArea textarea {
+        background: rgba(255, 255, 255, 0.05) !important;
+        backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: #fff !important;
+        caret-color: #fff !important;
+        border-radius: 16px !important;
+    }
+    .stTextArea textarea::placeholder { color: rgba(255,255,255,0.4) !important; }
+    .stTextArea textarea:focus {
         background: rgba(255, 255, 255, 0.1) !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
-        color: #fff !important;
-        border-radius: 8px;
+        border-color: rgba(255, 255, 255, 0.2) !important;
     }
-    .stTextInput input::placeholder { color: rgba(255,255,255,0.5); }
     
-    /* All buttons */
+    /* Generate button - bg-white/10, border-white/10 */
     .stButton > button {
-        background: rgba(255, 255, 255, 0.12) !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
         color: #fff !important;
-        border-radius: 8px;
+        border-radius: 12px;
         font-weight: 500;
     }
     .stButton > button:hover {
         background: rgba(255, 255, 255, 0.2) !important;
-        border-color: rgba(255, 255, 255, 0.3) !important;
-        color: #fff !important;
+        border-color: rgba(255, 255, 255, 0.2) !important;
     }
+    
+    /* File uploader - glass */
+    div[data-testid="stFileUploader"] {
+        background: rgba(255, 255, 255, 0.05) !important;
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+    }
+    div[data-testid="stFileUploader"] section { background: transparent !important; border: none !important; }
     
     /* Main text */
-    .main .stMarkdown, .main label, .main p { color: #f5f5f5 !important; }
+    .main .stMarkdown, .main label, .main p { color: #fff !important; }
     .main .stMarkdown h1, .main .stMarkdown h2, .main .stMarkdown h3, .main .stMarkdown h4 { color: #fff !important; }
-    .main .stMarkdown li, .main .stMarkdown span { color: #f5f5f5 !important; }
+    .main .stMarkdown li, .main .stMarkdown span { color: #fff !important; }
     
-    /* Chat messages */
-    [data-testid="stChatMessage"] .stMarkdown, [data-testid="stChatMessage"] p { color: #f5f5f5 !important; }
-    
-    /* Text area - visible input box */
-    .stTextArea textarea {
-        background: rgba(255, 255, 255, 0.1) !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
-        color: #fff !important;
-        caret-color: #fff !important;
-        border-radius: 12px !important;
+    /* Chat messages - glass cards */
+    [data-testid="stChatMessage"] {
+        background: rgba(255, 255, 255, 0.05) !important;
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 1rem;
     }
-    .stTextArea textarea::placeholder { color: rgba(255,255,255,0.5) !important; }
-    .stTextArea textarea:focus {
-        border-color: rgba(255, 255, 255, 0.4) !important;
-        box-shadow: 0 0 0 1px rgba(255,255,255,0.2);
-    }
+    [data-testid="stChatMessage"] .stMarkdown, [data-testid="stChatMessage"] p { color: #fff !important; }
     
     /* Alerts */
     [data-testid="stAlert"] {
-        background: rgba(255, 255, 255, 0.08) !important;
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.06) !important;
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
     }
     
     /* Expanders */
     [data-testid="stExpander"] {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
         margin-bottom: 0.5rem;
     }
-    [data-testid="stExpander"] .stMarkdown, [data-testid="stExpander"] p { color: #f5f5f5 !important; }
-    
-    /* Form - normal flow, no fixed positioning (Streamlit-friendly) */
-    [data-testid="stForm"] {
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        padding: 1.5rem !important;
-        margin: 1rem 0 !important;
-    }
+    [data-testid="stExpander"] .stMarkdown, [data-testid="stExpander"] p { color: #fff !important; }
     
     /* Hide Streamlit branding */
     #MainMenu { visibility: hidden; }
     footer { visibility: hidden; }
 </style>
+""", unsafe_allow_html=True)
+
+# Glow orbs - amber center, orange bottom-right
+st.markdown("""
+<style>@keyframes orb-pulse { 0%,100%{opacity:0.8} 50%{opacity:1} }</style>
+<div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+    width: 800px; height: 800px; background: rgba(245, 158, 11, 0.4); border-radius: 50%; 
+    filter: blur(120px); pointer-events: none; z-index: 1; animation: orb-pulse 4s ease-in-out infinite;"></div>
+<div style="position: fixed; bottom: 0; right: 0; width: 600px; height: 600px; 
+    background: rgba(251, 146, 60, 0.3); border-radius: 50%; filter: blur(100px); 
+    pointer-events: none; z-index: 1;"></div>
 """, unsafe_allow_html=True)
 
 # Nav bar - Redefined: Logo (PM+AI circles) + AutoPM-AI
@@ -360,26 +375,52 @@ if not st.session_state.messages:
     </div>
     """, unsafe_allow_html=True)
 
-# Input area - form + upload in normal flow (no fixed positioning)
+# Main glass card - Recommendation input (Logo + textarea + Generate) + Upload + Feedback
 with st.form("chat_form", clear_on_submit=True):
-    prompt = st.text_area(
-        "Message",
-        placeholder="Ask for anything or use a command (e.g. 'generate spec for...')",
-        label_visibility="collapsed",
-        height=120,
-        key="chat_input",
-    )
-    col_btn, col_upload = st.columns([1, 3])
-    with col_btn:
-        submitted = st.form_submit_button("Generate")
-    with col_upload:
-        uploaded_files = st.file_uploader(
-            "Upload documents",
-            type=None,
-            accept_multiple_files=True,
-            help="Interviews (.txt, .md, .pdf, .docx) • Usage data (.csv)",
-            key="file_upload",
+    col_logo, col_input = st.columns([0.5, 12])
+    with col_logo:
+        st.markdown("""
+        <div style="padding-top: 1rem;">
+            <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 20px; height: 20px;">
+                <circle cx="12" cy="16" r="10" fill="black" stroke="white" stroke-width="2"/>
+                <text x="12" y="21" font-size="10" font-weight="bold" fill="white" text-anchor="middle">PM</text>
+                <circle cx="20" cy="16" r="10" fill="black" stroke="white" stroke-width="2"/>
+                <text x="20" y="21" font-size="10" font-weight="bold" fill="white" text-anchor="middle">AI</text>
+            </svg>
+        </div>
+        """, unsafe_allow_html=True)
+    with col_input:
+        prompt = st.text_area(
+            "Message",
+            placeholder="Ask for anything or use a command",
+            label_visibility="collapsed",
+            height=100,
+            key="chat_input",
         )
+    submitted = st.form_submit_button("Generate")
+
+# File upload + Feedback row (below input, in glass card area)
+col_upload, col_feedback, _ = st.columns([2, 1, 3])
+with col_upload:
+    uploaded_files = st.file_uploader(
+        "Upload documents",
+        type=None,
+        accept_multiple_files=True,
+        help="Interviews (.txt, .md, .pdf, .docx) • Usage data (.csv)",
+        key="file_upload",
+    )
+with col_feedback:
+    st.markdown("""
+    <div style="padding-top: 0.5rem;">
+        <button style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; 
+            border-radius: 0.5rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
+            color: rgba(255,255,255,0.7); font-size: 0.875rem; cursor: pointer; 
+            transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';" 
+            onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.color='rgba(255,255,255,0.7)';">
+            <span style="font-size: 1rem;">💬</span> Feedback
+        </button>
+    </div>
+    """, unsafe_allow_html=True)
 
 if submitted and prompt and prompt.strip():
     prompt = prompt.strip()
